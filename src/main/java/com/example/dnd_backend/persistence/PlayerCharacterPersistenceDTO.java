@@ -5,6 +5,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Embedded;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class PlayerCharacterPersistenceDTO {
@@ -16,6 +21,14 @@ public class PlayerCharacterPersistenceDTO {
     
     @Embedded
     private CharacterStats stats;
+
+    @ManyToMany
+    @JoinTable(
+        name = "character_inventory",
+        joinColumns = @JoinColumn(name = "character_id"),
+        inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
+    private Set<ItemPersistenceDTO> inventory = new HashSet<>();
 
     public PlayerCharacterPersistenceDTO(String name, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma) {
         this.name = name;
@@ -94,5 +107,23 @@ public class PlayerCharacterPersistenceDTO {
 
     public void setStats(CharacterStats stats) {
         this.stats = stats;
+    }
+
+    public Set<ItemPersistenceDTO> getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(Set<ItemPersistenceDTO> inventory) {
+        this.inventory = inventory;
+    }
+
+    public void addItem(ItemPersistenceDTO item) {
+        inventory.add(item);
+        item.getOwners().add(this);
+    }
+
+    public void removeItem(ItemPersistenceDTO item) {
+        inventory.remove(item);
+        item.getOwners().remove(this);
     }
 }
