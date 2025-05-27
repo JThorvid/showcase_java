@@ -25,12 +25,14 @@ public class PlayerCharacterDTOAdapter {
         CharacterStatsDTO stats = playerCharacterDTO.stats();
         return new PlayerCharacterPersistenceDTO(
                 playerCharacterDTO.name(),
-                stats.strength(),
-                stats.dexterity(),
-                stats.constitution(),
-                stats.intelligence(),
-                stats.wisdom(),
-                stats.charisma()
+                new CharacterStats(
+                    stats.strength(),
+                    stats.dexterity(),
+                    stats.constitution(),
+                    stats.intelligence(),
+                    stats.wisdom(),
+                    stats.charisma()
+                )
         );
     }
 }
