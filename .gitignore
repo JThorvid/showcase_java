@@ -1,3 +1,50 @@
+# H2 Database files
+*.mv.db
+*.trace.db
+
+# Data directory
+/data/
+
+# Log files
+*.log
+
+# Maven target directory
+/target/
+
+# IDEA files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code files
+.vscode/
+
+# Eclipse files
+.classpath
+.project
+.settings/
+
+# Compiled output
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Environment specific files
+.env
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -6,18 +53,8 @@ target/
 
 ### STS ###
 .apt_generated
-.classpath
 .factorypath
-.project
-.settings
-.springBeans
 .sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
 
 ### NetBeans ###
 /nbproject/private/
@@ -28,8 +65,5 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
 
 .DS_Store
