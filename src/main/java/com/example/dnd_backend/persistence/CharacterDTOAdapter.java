@@ -5,7 +5,7 @@ import com.example.dnd_backend.controllers.PlayerCharacterDTO;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PlayerCharacterDTOAdapter {
+public class CharacterDTOAdapter {
     public PlayerCharacterDTO toPlayerCharacterDTO(PlayerCharacterPersistenceDTO persistenceDTO) {
         CharacterStats stats = persistenceDTO.getStats();
         return new PlayerCharacterDTO(

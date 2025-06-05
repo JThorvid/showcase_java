@@ -1,7 +1,7 @@
 package com.example.dnd_backend.controllers;
 
 import com.example.dnd_backend.persistence.CharacterRepository;
-import com.example.dnd_backend.persistence.PlayerCharacterDTOAdapter;
+import com.example.dnd_backend.persistence.CharacterDTOAdapter;
 import com.example.dnd_backend.persistence.PlayerCharacterPersistenceDTO;
 import com.example.dnd_backend.persistence.ItemDTOAdapter;
 import com.example.dnd_backend.persistence.ItemPersistenceDTO;
@@ -18,13 +18,13 @@ import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/characters")
-public class PlayerCharacterController {
+public class CharacterController {
     private final CharacterRepository characterRepository;
-    private final PlayerCharacterDTOAdapter adapter;
+    private final CharacterDTOAdapter adapter;
     private final ItemDTOAdapter itemAdapter;
     private final ItemRepository itemRepository;
 
-    public PlayerCharacterController(CharacterRepository characterRepository, PlayerCharacterDTOAdapter adapter, ItemDTOAdapter itemAdapter, ItemRepository itemRepository) {
+    public CharacterController(CharacterRepository characterRepository, CharacterDTOAdapter adapter, ItemDTOAdapter itemAdapter, ItemRepository itemRepository) {
         this.characterRepository = characterRepository;
         this.adapter = adapter;
         this.itemAdapter = itemAdapter;

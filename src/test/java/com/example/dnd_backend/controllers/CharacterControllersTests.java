@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -31,13 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
-@WebMvcTest(PlayerCharacterController.class)
-class PlayerCharacterControllersTests {
+@WebMvcTest(CharacterController.class)
+class CharacterControllersTests {
     @MockitoBean
     private CharacterRepository characterRepository;
 
     @MockitoBean
-    private PlayerCharacterDTOAdapter adapter;
+    private CharacterDTOAdapter adapter;
 
     @MockitoBean
     private ItemDTOAdapter itemAdapter;
@@ -52,7 +51,7 @@ class PlayerCharacterControllersTests {
     void testGetCharacters() throws Exception {
         CharacterStatsDTO bobStatsDTO = new CharacterStatsDTO(18, 8, 16, 12, 8, 19);
         PlayerCharacterDTO playerCharacterDTO = new PlayerCharacterDTO("Bob", bobStatsDTO);
-        
+
         CharacterStats bobStatsPersistence = new CharacterStats(18, 8, 16, 12, 8, 19);
         PlayerCharacterPersistenceDTO persistenceDTO = new PlayerCharacterPersistenceDTO(1L, "Bob", bobStatsPersistence, new HashSet<>());
 
@@ -99,7 +98,7 @@ class PlayerCharacterControllersTests {
         when(characterRepository.save(persistenceToSave)).thenReturn(persistenceSaved);
         when(adapter.toPlayerCharacterDTO(persistenceSaved)).thenReturn(playerCharacterDTO);
 
-        PlayerCharacterController controller = new PlayerCharacterController(characterRepository, adapter, itemAdapter, itemRepository);
+        CharacterController controller = new CharacterController(characterRepository, adapter, itemAdapter, itemRepository);
 
         ResponseEntity<PlayerCharacterDTO> actual = controller.createCharacter(playerCharacterDTO);
 
@@ -118,15 +117,15 @@ class PlayerCharacterControllersTests {
         String characterName = "Gandalf";
         ItemPersistenceDTO staffPersistence = new ItemPersistenceDTO(1L, "Staff of Power", "A mighty staff", 2.0, new HashSet<>());
         ItemPersistenceDTO pipePersistence = new ItemPersistenceDTO(2L, "Longbottom Leaf Pipe", "A fine pipe", 0.2, new HashSet<>());
-        
-        CharacterStats gandalfStats = new CharacterStats(10,10,10,18,18,14);
+
+        CharacterStats gandalfStats = new CharacterStats(10, 10, 10, 18, 18, 14);
         PlayerCharacterPersistenceDTO gandalfPersistence = new PlayerCharacterPersistenceDTO(1L, characterName, gandalfStats, new HashSet<>());
         gandalfPersistence.addItem(staffPersistence);
         gandalfPersistence.addItem(pipePersistence);
 
         ItemDTO staffDTO = new ItemDTO("Staff of Power", "A mighty staff", 2.0);
         ItemDTO pipeDTO = new ItemDTO("Longbottom Leaf Pipe", "A fine pipe", 0.2);
-        
+
         when(characterRepository.findByName(characterName)).thenReturn(Optional.of(gandalfPersistence));
         when(itemAdapter.toItemDTO(staffPersistence)).thenReturn(staffDTO);
         when(itemAdapter.toItemDTO(pipePersistence)).thenReturn(pipeDTO);
@@ -159,17 +158,17 @@ class PlayerCharacterControllersTests {
     void testAddItemToInventory() throws Exception {
         String characterName = "Aragorn";
         String itemName = "Anduril";
-        CharacterStats aragornStats = new CharacterStats(15,18,14,13,13,16);
+        CharacterStats aragornStats = new CharacterStats(15, 18, 14, 13, 13, 16);
         PlayerCharacterPersistenceDTO aragornPersistence = new PlayerCharacterPersistenceDTO(1L, characterName, aragornStats, new HashSet<>());
         ItemPersistenceDTO andurilPersistence = new ItemPersistenceDTO(1L, itemName, "Flame of the West", 3.0, new HashSet<>());
 
         when(characterRepository.findByName(characterName)).thenReturn(Optional.of(aragornPersistence));
         when(itemRepository.findByName(itemName)).thenReturn(Optional.of(andurilPersistence));
         when(characterRepository.save(any(PlayerCharacterPersistenceDTO.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        
+
         PlayerCharacterDTO aragornDTO = new PlayerCharacterDTO(
-            aragornPersistence.getName(), 
-            new CharacterStatsDTO(aragornPersistence.getStats().getStrength(), aragornPersistence.getStats().getDexterity(), aragornPersistence.getStats().getConstitution(), aragornPersistence.getStats().getIntelligence(), aragornPersistence.getStats().getWisdom(), aragornPersistence.getStats().getCharisma())
+                aragornPersistence.getName(),
+                new CharacterStatsDTO(aragornPersistence.getStats().getStrength(), aragornPersistence.getStats().getDexterity(), aragornPersistence.getStats().getConstitution(), aragornPersistence.getStats().getIntelligence(), aragornPersistence.getStats().getWisdom(), aragornPersistence.getStats().getCharisma())
         );
         when(adapter.toPlayerCharacterDTO(aragornPersistence)).thenReturn(aragornDTO);
 
@@ -196,7 +195,7 @@ class PlayerCharacterControllersTests {
 
     @Test
     void testAddItemToInventory_itemNotFound() throws Exception {
-        CharacterStats someStats = new CharacterStats(10,10,10,10,10,10);
+        CharacterStats someStats = new CharacterStats(10, 10, 10, 10, 10, 10);
         when(characterRepository.findByName("SomeCharacter")).thenReturn(Optional.of(new PlayerCharacterPersistenceDTO(1L, "SomeCharacter", someStats, new HashSet<>())));
         when(itemRepository.findByName("NonExistentItem")).thenReturn(Optional.empty());
 
@@ -208,7 +207,7 @@ class PlayerCharacterControllersTests {
     void testRemoveItemFromInventory() throws Exception {
         String characterName = "Legolas";
         String itemName = "Bow of the Galadhrim";
-        CharacterStats legolasStats = new CharacterStats(12,20,12,15,16,14);
+        CharacterStats legolasStats = new CharacterStats(12, 20, 12, 15, 16, 14);
         PlayerCharacterPersistenceDTO legolasPersistence = new PlayerCharacterPersistenceDTO(1L, characterName, legolasStats, new HashSet<>());
         ItemPersistenceDTO bowPersistence = new ItemPersistenceDTO(1L, itemName, "A fine bow", 2.0, new HashSet<>());
         legolasPersistence.addItem(bowPersistence);
@@ -218,8 +217,8 @@ class PlayerCharacterControllersTests {
         when(characterRepository.save(any(PlayerCharacterPersistenceDTO.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         PlayerCharacterDTO legolasDTO = new PlayerCharacterDTO(
-            legolasPersistence.getName(), 
-            new CharacterStatsDTO(legolasPersistence.getStats().getStrength(), legolasPersistence.getStats().getDexterity(), legolasPersistence.getStats().getConstitution(), legolasPersistence.getStats().getIntelligence(), legolasPersistence.getStats().getWisdom(), legolasPersistence.getStats().getCharisma())
+                legolasPersistence.getName(),
+                new CharacterStatsDTO(legolasPersistence.getStats().getStrength(), legolasPersistence.getStats().getDexterity(), legolasPersistence.getStats().getConstitution(), legolasPersistence.getStats().getIntelligence(), legolasPersistence.getStats().getWisdom(), legolasPersistence.getStats().getCharisma())
         );
         when(adapter.toPlayerCharacterDTO(legolasPersistence)).thenReturn(legolasDTO);
 
@@ -239,7 +238,7 @@ class PlayerCharacterControllersTests {
     void testRemoveItemFromInventory_itemNotInInventory() throws Exception {
         String characterName = "Gimli";
         String itemName = "Battle Axe";
-        CharacterStats gimliStats = new CharacterStats(16,14,18,10,12,10);
+        CharacterStats gimliStats = new CharacterStats(16, 14, 18, 10, 12, 10);
         PlayerCharacterPersistenceDTO gimliPersistence = new PlayerCharacterPersistenceDTO(1L, characterName, gimliStats, new HashSet<>());
         ItemPersistenceDTO axePersistence = new ItemPersistenceDTO(1L, itemName, "A heavy axe", 4.0, new HashSet<>());
 
@@ -247,8 +246,8 @@ class PlayerCharacterControllersTests {
         when(itemRepository.findByName(itemName)).thenReturn(Optional.of(axePersistence));
 
         PlayerCharacterDTO gimliDTO = new PlayerCharacterDTO(
-            gimliPersistence.getName(), 
-            new CharacterStatsDTO(gimliPersistence.getStats().getStrength(), gimliPersistence.getStats().getDexterity(), gimliPersistence.getStats().getConstitution(), gimliPersistence.getStats().getIntelligence(), gimliPersistence.getStats().getWisdom(), gimliPersistence.getStats().getCharisma())
+                gimliPersistence.getName(),
+                new CharacterStatsDTO(gimliPersistence.getStats().getStrength(), gimliPersistence.getStats().getDexterity(), gimliPersistence.getStats().getConstitution(), gimliPersistence.getStats().getIntelligence(), gimliPersistence.getStats().getWisdom(), gimliPersistence.getStats().getCharisma())
         );
         when(adapter.toPlayerCharacterDTO(gimliPersistence)).thenReturn(gimliDTO);
 
