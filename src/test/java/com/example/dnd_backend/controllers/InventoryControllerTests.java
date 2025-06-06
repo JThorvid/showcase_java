@@ -98,7 +98,7 @@ class InventoryControllerTests {
 
         PlayerCharacterDTO aragornDTO = new PlayerCharacterDTO(
                 aragornPersistence.getName(),
-                new CharacterStatsDTO(aragornPersistence.getStats().getStrength(), aragornPersistence.getStats().getDexterity(), aragornPersistence.getStats().getConstitution(), aragornPersistence.getStats().getIntelligence(), aragornPersistence.getStats().getWisdom(), aragornPersistence.getStats().getCharisma())
+                aragornPersistence.getStats()
         );
         when(adapter.toPlayerCharacterDTO(aragornPersistence)).thenReturn(aragornDTO);
 
@@ -148,7 +148,7 @@ class InventoryControllerTests {
 
         PlayerCharacterDTO legolasDTO = new PlayerCharacterDTO(
                 legolasPersistence.getName(),
-                new CharacterStatsDTO(legolasPersistence.getStats().getStrength(), legolasPersistence.getStats().getDexterity(), legolasPersistence.getStats().getConstitution(), legolasPersistence.getStats().getIntelligence(), legolasPersistence.getStats().getWisdom(), legolasPersistence.getStats().getCharisma())
+                legolasPersistence.getStats()
         );
         when(adapter.toPlayerCharacterDTO(legolasPersistence)).thenReturn(legolasDTO);
 
@@ -177,7 +177,7 @@ class InventoryControllerTests {
 
         PlayerCharacterDTO gimliDTO = new PlayerCharacterDTO(
                 gimliPersistence.getName(),
-                new CharacterStatsDTO(gimliPersistence.getStats().getStrength(), gimliPersistence.getStats().getDexterity(), gimliPersistence.getStats().getConstitution(), gimliPersistence.getStats().getIntelligence(), gimliPersistence.getStats().getWisdom(), gimliPersistence.getStats().getCharisma())
+                gimliPersistence.getStats()
         );
         when(adapter.toPlayerCharacterDTO(gimliPersistence)).thenReturn(gimliDTO);
 

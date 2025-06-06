@@ -2,6 +2,8 @@ package com.example.dnd_backend.controllers;
 
 import com.example.dnd_backend.events.CharacterCreated;
 import com.example.dnd_backend.events.CharacterEventProducer;
+import com.example.dnd_backend.persistence.CharacterStats;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,8 +44,8 @@ class CharacterControllerTests {
 
     @Test
     void testCreateCharacter() {
-        CharacterStatsDTO bobStatsDTO = new CharacterStatsDTO(18, 8, 16, 12, 8, 19);
-        PlayerCharacterDTO playerCharacterDTO = new PlayerCharacterDTO("Bob", bobStatsDTO);
+        CharacterStats bobStats = new CharacterStats(18, 8, 16, 12, 8, 19);
+        PlayerCharacterDTO playerCharacterDTO = new PlayerCharacterDTO("Bob", bobStats);
 
         CharacterController controller = new CharacterController(eventProducer);
 

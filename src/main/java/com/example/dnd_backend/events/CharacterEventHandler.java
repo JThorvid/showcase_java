@@ -1,5 +1,9 @@
 package com.example.dnd_backend.events;
 
+import com.example.dnd_backend.controllers.PlayerCharacterDTO;
+import com.example.dnd_backend.persistence.CharacterRepository;
+import com.example.dnd_backend.persistence.CharacterStats;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -7,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CharacterEventHandler {
+    private final CharacterRepository characterRepository;
 
     @KafkaListener(topics = "character-events", groupId = "dnd-backend-consumer")
     public void handleEvent(CharacterEvent event) {
@@ -29,11 +34,17 @@ public class CharacterEventHandler {
     }
 
     private void handleCharacterCreated(CharacterCreated event) {
-        // TODO: Implement character creation logic
+        characterRepository.save(event.getCharacter().toPersistenceDTO());
     }
 
     private void handleCharacterUpdated(CharacterUpdated event) {
-        // TODO: Implement character update logic
+        Optional<PlayerCharacterPersistenceDTO> character = characterRepository.findByName(event.getCharacterName());
+        if (character.isPresent()) {
+            PlayerCharacterPersistenceDTO updatedCharacter = character.get();
+            updatedCharacter.setStats(event.getStats());
+            characterRepository.save(updatedCharacter);
+        }
+        characterRepository.save(characterDTO.toPersistenceDTO());
     }
 
     private void handleItemAdded(ItemAdded event) {
