@@ -1,0 +1,15 @@
+package com.example.dnd_backend.events;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class ItemRemoved extends CharacterEvent {
+    private final String itemName;
+
+    public ItemRemoved(String characterName, String itemName) {
+        super(characterName, "ITEM_REMOVED");
+        this.itemName = itemName;
+    }
+}

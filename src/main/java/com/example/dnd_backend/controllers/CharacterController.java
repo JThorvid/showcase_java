@@ -1,48 +1,36 @@
 package com.example.dnd_backend.controllers;
 
-import com.example.dnd_backend.persistence.CharacterRepository;
-import com.example.dnd_backend.persistence.CharacterDTOAdapter;
-import com.example.dnd_backend.persistence.PlayerCharacterPersistenceDTO;
+import com.example.dnd_backend.events.CharacterCreated;
+import com.example.dnd_backend.events.CharacterEventProducer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/characters")
 public class CharacterController {
-    private final CharacterRepository characterRepository;
-    private final CharacterDTOAdapter adapter;
+    private final CharacterEventProducer eventProducer;
 
-    public CharacterController(CharacterRepository characterRepository, CharacterDTOAdapter adapter) {
-        this.characterRepository = characterRepository;
-        this.adapter = adapter;
+    public CharacterController(CharacterEventProducer eventProducer) {
+        this.eventProducer = eventProducer;
     }
 
     @GetMapping
-    public List<PlayerCharacterDTO> getCharacters() {
-        return StreamSupport.stream(characterRepository.findAll().spliterator(), false)
-                .map(adapter::toPlayerCharacterDTO).toList();
+    public ResponseEntity<List<PlayerCharacterDTO>> getCharacters() {
+        // TODO: Implement query from event store
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping(path = "/{name}")
     public ResponseEntity<PlayerCharacterDTO> getCharacter(@PathVariable String name) {
-        return characterRepository.findByName(name)
-                .map(adapter::toPlayerCharacterDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        // TODO: Implement query from event store
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
     public ResponseEntity<PlayerCharacterDTO> createCharacter(@RequestBody PlayerCharacterDTO characterDTO) {
-        PlayerCharacterPersistenceDTO toSave = adapter.fromPlayerCharacterDTO(characterDTO);
-        PlayerCharacterPersistenceDTO saved = characterRepository.save(
-                toSave
-        );
-        PlayerCharacterDTO character = adapter.toPlayerCharacterDTO(
-                saved
-        );
-        return ResponseEntity.ok(character);
+        CharacterCreated event = new CharacterCreated(characterDTO);
+        eventProducer.sendEvent(event);
+        return ResponseEntity.ok(characterDTO);
     }
 }
