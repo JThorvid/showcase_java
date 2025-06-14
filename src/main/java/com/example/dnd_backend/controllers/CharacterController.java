@@ -2,6 +2,8 @@ package com.example.dnd_backend.controllers;
 
 import com.example.dnd_backend.events.CharacterCreated;
 import com.example.dnd_backend.events.CharacterEventProducer;
+import com.example.dnd_backend.persistence.CharacterDTOAdapter;
+import com.example.dnd_backend.persistence.PlayerCharacterPersistenceDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -10,9 +12,11 @@ import java.util.List;
 @RequestMapping("/characters")
 public class CharacterController {
     private final CharacterEventProducer eventProducer;
+    private final CharacterDTOAdapter dtoAdapter;
 
-    public CharacterController(CharacterEventProducer eventProducer) {
+    public CharacterController(CharacterEventProducer eventProducer, CharacterDTOAdapter dtoAdapter) {
         this.eventProducer = eventProducer;
+        this.dtoAdapter = dtoAdapter;
     }
 
     @GetMapping
@@ -29,8 +33,9 @@ public class CharacterController {
 
     @PostMapping
     public ResponseEntity<PlayerCharacterDTO> createCharacter(@RequestBody PlayerCharacterDTO characterDTO) {
-        CharacterCreated event = new CharacterCreated(characterDTO);
+        PlayerCharacterPersistenceDTO persistenceDTO = dtoAdapter.toPersistenceDTO(characterDTO);
+        CharacterCreated event = new CharacterCreated(persistenceDTO);
         eventProducer.sendEvent(event);
-        return ResponseEntity.ok(characterDTO);
+        return ResponseEntity.ok(dtoAdapter.fromPersistenceDTO(persistenceDTO));
     }
 }

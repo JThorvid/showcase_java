@@ -1,9 +1,13 @@
 package com.example.dnd_backend.events;
 
-import com.example.dnd_backend.controllers.PlayerCharacterDTO;
-import com.example.dnd_backend.persistence.CharacterRepository;
-import com.example.dnd_backend.persistence.CharacterStats;
-
+import com.example.dnd_backend.persistence.PlayerCharacterPersistenceDTO;
+import com.example.dnd_backend.persistence.ItemPersistenceDTO;
+import com.example.dnd_backend.eventstore.CharacterEventStore;
+import com.example.dnd_backend.events.CharacterEvent;
+import com.example.dnd_backend.events.CharacterCreated;
+import com.example.dnd_backend.events.CharacterUpdated;
+import com.example.dnd_backend.events.ItemAdded;
+import com.example.dnd_backend.events.ItemRemoved;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -11,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CharacterEventHandler {
-    private final CharacterRepository characterRepository;
+    private final CharacterEventStore eventStore;
 
     @KafkaListener(topics = "character-events", groupId = "dnd-backend-consumer")
     public void handleEvent(CharacterEvent event) {
@@ -34,24 +38,36 @@ public class CharacterEventHandler {
     }
 
     private void handleCharacterCreated(CharacterCreated event) {
-        characterRepository.save(event.getCharacter().toPersistenceDTO());
+        eventStore.addEvent(event);
     }
 
     private void handleCharacterUpdated(CharacterUpdated event) {
-        Optional<PlayerCharacterPersistenceDTO> character = characterRepository.findByName(event.getCharacterName());
-        if (character.isPresent()) {
-            PlayerCharacterPersistenceDTO updatedCharacter = character.get();
-            updatedCharacter.setStats(event.getStats());
-            characterRepository.save(updatedCharacter);
-        }
-        characterRepository.save(characterDTO.toPersistenceDTO());
+        eventStore.getCharacter(event.getCharacterName())
+                .ifPresent(character -> {
+                    character.setStats(event.getStats());
+                    eventStore.addEvent(event);
+                });
     }
 
     private void handleItemAdded(ItemAdded event) {
-        // TODO: Implement item addition logic
+        eventStore.getCharacter(event.getCharacterName())
+                .ifPresent(character -> {
+                    ItemPersistenceDTO item = new ItemPersistenceDTO();
+                    item.setName(event.getItemName());
+                    item.setDescription(event.getDescription());
+                    item.setWeight(event.getWeight());
+                    character.addItem(item);
+                    eventStore.addEvent(event);
+                });
     }
 
     private void handleItemRemoved(ItemRemoved event) {
-        // TODO: Implement item removal logic
+        eventStore.getCharacter(event.getCharacterName())
+                .ifPresent(character -> {
+                    ItemPersistenceDTO item = new ItemPersistenceDTO();
+                    item.setName(event.getItemName());
+                    character.removeItem(item);
+                    eventStore.addEvent(event);
+                });
     }
 }

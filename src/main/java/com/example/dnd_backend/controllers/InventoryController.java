@@ -63,7 +63,7 @@ public class InventoryController {
         character.addItem(item);
         PlayerCharacterPersistenceDTO updatedCharacter = characterRepository.save(character);
 
-        return ResponseEntity.ok(adapter.toPlayerCharacterDTO(updatedCharacter));
+        return ResponseEntity.ok(adapter.fromPersistenceDTO(updatedCharacter));
     }
 
     @DeleteMapping(path = "/inventory/{itemName}")
@@ -82,12 +82,12 @@ public class InventoryController {
         ItemPersistenceDTO item = itemOpt.get();
 
         if (!character.getInventory().contains(item)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(adapter.toPlayerCharacterDTO(character));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(adapter.fromPersistenceDTO(character));
         }
 
         character.removeItem(item);
         PlayerCharacterPersistenceDTO updatedCharacter = characterRepository.save(character);
 
-        return ResponseEntity.ok(adapter.toPlayerCharacterDTO(updatedCharacter));
+        return ResponseEntity.ok(adapter.fromPersistenceDTO(updatedCharacter));
     }
 }

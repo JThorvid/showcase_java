@@ -100,12 +100,12 @@ class InventoryControllerTests {
                 aragornPersistence.getName(),
                 aragornPersistence.getStats()
         );
-        when(adapter.toPlayerCharacterDTO(aragornPersistence)).thenReturn(aragornDTO);
+        when(adapter.fromPersistenceDTO(aragornPersistence)).thenReturn(aragornDTO);
 
         mockMvc.perform(post("/characters/{characterName}/inventory/{itemName}", characterName, itemName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(characterName))
-                .andExpect(jsonPath("$.strength").value(15));
+                .andExpect(jsonPath("$.stats.strength").value(15));
 
         verify(characterRepository).findByName(characterName);
         verify(itemRepository).findByName(itemName);
@@ -150,12 +150,12 @@ class InventoryControllerTests {
                 legolasPersistence.getName(),
                 legolasPersistence.getStats()
         );
-        when(adapter.toPlayerCharacterDTO(legolasPersistence)).thenReturn(legolasDTO);
+        when(adapter.fromPersistenceDTO(legolasPersistence)).thenReturn(legolasDTO);
 
         mockMvc.perform(delete("/characters/{characterName}/inventory/{itemName}", characterName, itemName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(characterName))
-                .andExpect(jsonPath("$.dexterity").value(20));
+                .andExpect(jsonPath("$.stats.dexterity").value(20));
 
         verify(characterRepository).findByName(characterName);
         verify(itemRepository).findByName(itemName);
@@ -179,7 +179,7 @@ class InventoryControllerTests {
                 gimliPersistence.getName(),
                 gimliPersistence.getStats()
         );
-        when(adapter.toPlayerCharacterDTO(gimliPersistence)).thenReturn(gimliDTO);
+        when(adapter.fromPersistenceDTO(gimliPersistence)).thenReturn(gimliDTO);
 
         mockMvc.perform(delete("/characters/{characterName}/inventory/{itemName}", characterName, itemName))
                 .andExpect(status().isBadRequest());

@@ -5,14 +5,15 @@ POST {{ URL }}/characters
 Content-Type: application/json
 
 {
-  "id": 1,
   "name": "Bob",
-  "strength": 18,
-  "dexterity": 9,
-  "constitution": 16,
-  "intelligence": 8,
-  "wisdom": 12,
-  "charisma": 10
+  "stats": {
+    "strength": 18,
+    "dexterity": 9,
+    "constitution": 16,
+    "intelligence": 8,
+    "wisdom": 12,
+    "charisma": 10
+  }
 }
 
 ### Get all
