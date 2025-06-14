@@ -1,13 +1,7 @@
 package com.example.dnd_backend.events;
 
-import com.example.dnd_backend.persistence.PlayerCharacterPersistenceDTO;
 import com.example.dnd_backend.persistence.ItemPersistenceDTO;
 import com.example.dnd_backend.eventstore.CharacterEventStore;
-import com.example.dnd_backend.events.CharacterEvent;
-import com.example.dnd_backend.events.CharacterCreated;
-import com.example.dnd_backend.events.CharacterUpdated;
-import com.example.dnd_backend.events.ItemAdded;
-import com.example.dnd_backend.events.ItemRemoved;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -38,14 +32,13 @@ public class CharacterEventHandler {
     }
 
     private void handleCharacterCreated(CharacterCreated event) {
-        eventStore.addEvent(event);
+        // No need to store the event, it's already in Kafka
     }
 
     private void handleCharacterUpdated(CharacterUpdated event) {
         eventStore.getCharacter(event.getCharacterName())
                 .ifPresent(character -> {
                     character.setStats(event.getStats());
-                    eventStore.addEvent(event);
                 });
     }
 
@@ -57,7 +50,6 @@ public class CharacterEventHandler {
                     item.setDescription(event.getDescription());
                     item.setWeight(event.getWeight());
                     character.addItem(item);
-                    eventStore.addEvent(event);
                 });
     }
 
@@ -67,7 +59,6 @@ public class CharacterEventHandler {
                     ItemPersistenceDTO item = new ItemPersistenceDTO();
                     item.setName(event.getItemName());
                     character.removeItem(item);
-                    eventStore.addEvent(event);
                 });
     }
 }

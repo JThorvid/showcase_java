@@ -8,37 +8,108 @@ import com.example.dnd_backend.events.CharacterUpdated;
 import com.example.dnd_backend.events.ItemAdded;
 import com.example.dnd_backend.events.ItemRemoved;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetResetStrategy;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Properties;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Component
 @RequiredArgsConstructor
 public class CharacterEventStore {
-    private final Map<String, List<CharacterEvent>> eventStore = new HashMap<>();
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
+    
+    private final String CHARACTER_EVENTS_TOPIC = "character-events";
 
-    public void addEvent(CharacterEvent event) {
-        String characterName = event.getCharacterName();
-        eventStore.computeIfAbsent(characterName, k -> new ArrayList<>())
-                .add(event);
+    private Consumer<String, CharacterEvent> createConsumer() {
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "character-event-store-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, CharacterEventDeserializer.class.getName());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, OffsetResetStrategy.EARLIEST.name().toLowerCase());
+        
+        return new KafkaConsumer<>(props);
     }
 
     public Optional<PlayerCharacterPersistenceDTO> getCharacter(String name) {
-        List<CharacterEvent> events = eventStore.get(name);
-        if (events == null) {
-            return Optional.empty();
+        try (Consumer<String, CharacterEvent> consumer = createConsumer()) {
+            consumer.subscribe(List.of(CHARACTER_EVENTS_TOPIC));
+            List<CharacterEvent> events = new ArrayList<>();
+            
+            // Poll until we get all events for this character
+            while (true) {
+                ConsumerRecords<String, CharacterEvent> records = consumer.poll(Duration.ofMillis(100));
+                boolean foundEvents = false;
+                
+                for (ConsumerRecord<String, CharacterEvent> record : records) {
+                    if (record.key().equals(name)) {
+                        events.add(record.value());
+                        foundEvents = true;
+                    }
+                }
+                
+                if (!foundEvents) {
+                    break;
+                }
+            }
+            
+            if (events.isEmpty()) {
+                return Optional.empty();
+            }
+            
+            return Optional.of(replayEvents(events));
         }
-        return Optional.of(replayEvents(events));
     }
 
     public List<PlayerCharacterPersistenceDTO> getAllCharacters() {
-        return eventStore.values().stream()
-            .map(events -> replayEvents(events))
-            .collect(Collectors.toList());
+        try (Consumer<String, CharacterEvent> consumer = createConsumer()) {
+            consumer.subscribe(List.of(CHARACTER_EVENTS_TOPIC));
+            List<PlayerCharacterPersistenceDTO> characters = new ArrayList<>();
+            List<CharacterEvent> currentEvents = new ArrayList<>();
+            String currentCharacter = null;
+            
+            while (true) {
+                ConsumerRecords<String, CharacterEvent> records = consumer.poll(Duration.ofMillis(100));
+                boolean foundEvents = false;
+                
+                for (ConsumerRecord<String, CharacterEvent> record : records) {
+                    String characterName = record.key();
+                    CharacterEvent event = record.value();
+                    
+                    if (currentCharacter == null || !currentCharacter.equals(characterName)) {
+                        if (!currentEvents.isEmpty()) {
+                            characters.add(replayEvents(currentEvents));
+                            currentEvents.clear();
+                        }
+                        currentCharacter = characterName;
+                    }
+                    
+                    currentEvents.add(event);
+                    foundEvents = true;
+                }
+                
+                if (!foundEvents) {
+                    break;
+                }
+            }
+            
+            if (!currentEvents.isEmpty()) {
+                characters.add(replayEvents(currentEvents));
+            }
+            
+            return characters;
+        }
     }
 
     private PlayerCharacterPersistenceDTO replayEvents(List<CharacterEvent> events) {
@@ -66,10 +137,10 @@ public class CharacterEventStore {
     }
 
     public void addItem(String characterName, ItemPersistenceDTO item) {
-        addEvent(new ItemAdded(characterName, item.getName(), item.getDescription(), item.getWeight()));
+        throw new UnsupportedOperationException("Event store is read-only. Use event producer to add items.");
     }
 
     public void removeItem(String characterName, ItemPersistenceDTO item) {
-        addEvent(new ItemRemoved(characterName, item.getName()));
+        throw new UnsupportedOperationException("Event store is read-only. Use event producer to remove items.");
     }
 }
