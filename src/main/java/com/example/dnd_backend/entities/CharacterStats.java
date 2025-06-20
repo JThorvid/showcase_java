@@ -1,10 +1,8 @@
-package com.example.dnd_backend.persistence;
+package com.example.dnd_backend.entities;
 
-import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Embeddable
 @Data
 @AllArgsConstructor
 public class CharacterStats {

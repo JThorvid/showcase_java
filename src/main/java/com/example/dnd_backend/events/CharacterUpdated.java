@@ -1,6 +1,6 @@
 package com.example.dnd_backend.events;
 
-import com.example.dnd_backend.persistence.CharacterStats;
+import com.example.dnd_backend.entities.CharacterStats;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

@@ -29,6 +29,10 @@ public class CharacterEventStore {
         events.computeIfAbsent(event.getName(), k -> new ArrayList<>()).add(event);
     }
 
+    public List<String> getKeys() {
+        return events.keySet().stream().toList();
+    }
+
     public List<DomainEvent> getEvents(String name) {
         return events.getOrDefault(name, List.of());
     }

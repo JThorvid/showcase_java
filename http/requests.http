@@ -16,8 +16,27 @@ Content-Type: application/json
   }
 }
 
+### Create another character
+POST {{ URL }}/characters
+Content-Type: application/json
+
+{
+  "name": "Doug",
+  "stats": {
+    "strength": 10,
+    "dexterity": 10,
+    "constitution": 10,
+    "intelligence": 8,
+    "wisdom": 10,
+    "charisma": 12
+  }
+}
+
 ### Get all
 GET {{ URL }}/characters
 
 ### GET specific
 GET {{ URL }}/characters/Bob
+
+### GET another specific
+GET {{ URL }}/characters/Doug
