@@ -1,7 +1,7 @@
 package com.example.dnd_backend.controllers;
 
 import com.example.dnd_backend.events.CharacterCreated;
-import com.example.dnd_backend.events.CharacterEventProducer;
+import com.example.dnd_backend.eventstore.CharacterEventStore;
 import com.example.dnd_backend.persistence.CharacterDTOAdapter;
 import com.example.dnd_backend.persistence.CharacterStats;
 import com.example.dnd_backend.persistence.PlayerCharacterPersistenceDTO;
@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(CharacterController.class)
 class CharacterControllerTests {
     @MockitoBean
-    private CharacterEventProducer eventProducer;
+    private CharacterEventStore eventStore;
 
     @MockitoBean
     private CharacterDTOAdapter dtoAdapter;
@@ -50,22 +51,22 @@ class CharacterControllerTests {
     @Test
     void testCreateCharacter() {
         CharacterStats bobStats = new CharacterStats(18, 8, 16, 12, 8, 19);
-        PlayerCharacterDTO playerCharacterDTO = new PlayerCharacterDTO("Bob", bobStats);
+        PlayerCharacter playerCharacter = new PlayerCharacter("Bob", bobStats);
         PlayerCharacterPersistenceDTO persistenceDTO = new PlayerCharacterPersistenceDTO(1L, "Bob", bobStats, new HashSet<>());
 
-        when(dtoAdapter.toPersistenceDTO(playerCharacterDTO)).thenReturn(persistenceDTO);
-        when(dtoAdapter.fromPersistenceDTO(persistenceDTO)).thenReturn(playerCharacterDTO);
+        when(dtoAdapter.toPersistenceDTO(playerCharacter)).thenReturn(persistenceDTO);
+        when(dtoAdapter.fromPersistenceDTO(persistenceDTO)).thenReturn(playerCharacter);
 
-        CharacterController controller = new CharacterController(eventProducer, dtoAdapter);
+        CharacterController controller = new CharacterController(eventStore, dtoAdapter);
 
-        ResponseEntity<PlayerCharacterDTO> actual = controller.createCharacter(playerCharacterDTO);
+        ResponseEntity<PlayerCharacter> actual = controller.createCharacter(playerCharacter);
 
         assertEquals(HttpStatus.OK, actual.getStatusCode());
         assertNotNull(actual.getBody());
-        assertEquals(playerCharacterDTO, actual.getBody());
+        assertEquals(playerCharacter, actual.getBody());
 
-        verify(eventProducer).sendEvent(any(CharacterCreated.class));
-        verify(dtoAdapter).toPersistenceDTO(playerCharacterDTO);
+        verify(eventStore).sendEvent(any(CharacterCreated.class));
+        verify(dtoAdapter).toPersistenceDTO(playerCharacter);
         verify(dtoAdapter).fromPersistenceDTO(persistenceDTO);
     }
 }

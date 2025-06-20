@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ItemAdded extends CharacterEvent {
+public class ItemAdded extends DomainEvent {
     private final String itemName;
     private final String description;
     private final double weight;

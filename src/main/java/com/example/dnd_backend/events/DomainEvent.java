@@ -3,7 +3,9 @@ package com.example.dnd_backend.events;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
+import lombok.Getter;
 
+@Getter
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
@@ -12,26 +14,20 @@ import lombok.Data;
         @JsonSubTypes.Type(value = ItemAdded.class, name = "ITEM_ADDED"),
         @JsonSubTypes.Type(value = ItemRemoved.class, name = "ITEM_REMOVED")
 })
-public abstract class CharacterEvent {
-    private final String characterName;
+public abstract class DomainEvent {
+    private final String name;
     private final long timestamp;
     private final String type;
 
-    public CharacterEvent(String characterName, String type) {
-        this.characterName = characterName;
+    protected DomainEvent() {
+        this.name = "";
+        this.timestamp = System.currentTimeMillis();
+        this.type = "";
+    }
+
+    protected DomainEvent(String name, String type) {
+        this.name = name;
         this.timestamp = System.currentTimeMillis();
         this.type = type;
-    }
-
-    public String getCharacterName() {
-        return characterName;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public String getType() {
-        return type;
     }
 }

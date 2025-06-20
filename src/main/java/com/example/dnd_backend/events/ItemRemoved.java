@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ItemRemoved extends CharacterEvent {
+public class ItemRemoved extends DomainEvent {
     private final String itemName;
 
     public ItemRemoved(String characterName, String itemName) {

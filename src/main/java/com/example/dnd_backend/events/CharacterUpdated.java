@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CharacterUpdated extends CharacterEvent {
+public class CharacterUpdated extends DomainEvent {
     private final CharacterStats stats;
 
     public CharacterUpdated(String characterName, CharacterStats stats) {

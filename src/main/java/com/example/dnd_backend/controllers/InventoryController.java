@@ -37,16 +37,15 @@ public class InventoryController {
             Set<ItemPersistenceDTO> inventory = characterPersistenceDTO.get().getInventory();
             List<ItemDTO> itemDTOs = inventory.stream()
                     .map(itemAdapter::toItemDTO)
-                    .collect(Collectors.toList());
+                    .toList();
             return ResponseEntity.ok(itemDTOs);
-        }
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping(path = "/inventory/{itemName}")
-    public ResponseEntity<PlayerCharacterDTO> addItemToInventory(@PathVariable String characterName, @PathVariable String itemName) {
+    public ResponseEntity<PlayerCharacter> addItemToInventory(@PathVariable String characterName, @PathVariable String itemName) {
         Optional<PlayerCharacterPersistenceDTO> characterOpt = characterRepository.findByName(characterName);
         Optional<ItemPersistenceDTO> itemOpt = itemRepository.findByName(itemName);
 
@@ -67,7 +66,7 @@ public class InventoryController {
     }
 
     @DeleteMapping(path = "/inventory/{itemName}")
-    public ResponseEntity<PlayerCharacterDTO> removeItemFromInventory(@PathVariable String characterName, @PathVariable String itemName) {
+    public ResponseEntity<PlayerCharacter> removeItemFromInventory(@PathVariable String characterName, @PathVariable String itemName) {
         Optional<PlayerCharacterPersistenceDTO> characterOpt = characterRepository.findByName(characterName);
         Optional<ItemPersistenceDTO> itemOpt = itemRepository.findByName(itemName);
 

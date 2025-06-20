@@ -96,7 +96,7 @@ class InventoryControllerTests {
         when(itemRepository.findByName(itemName)).thenReturn(Optional.of(andurilPersistence));
         when(characterRepository.save(any(PlayerCharacterPersistenceDTO.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PlayerCharacterDTO aragornDTO = new PlayerCharacterDTO(
+        PlayerCharacter aragornDTO = new PlayerCharacter(
                 aragornPersistence.getName(),
                 aragornPersistence.getStats()
         );
@@ -146,7 +146,7 @@ class InventoryControllerTests {
         when(itemRepository.findByName(itemName)).thenReturn(Optional.of(bowPersistence));
         when(characterRepository.save(any(PlayerCharacterPersistenceDTO.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PlayerCharacterDTO legolasDTO = new PlayerCharacterDTO(
+        PlayerCharacter legolasDTO = new PlayerCharacter(
                 legolasPersistence.getName(),
                 legolasPersistence.getStats()
         );
@@ -175,7 +175,7 @@ class InventoryControllerTests {
         when(characterRepository.findByName(characterName)).thenReturn(Optional.of(gimliPersistence));
         when(itemRepository.findByName(itemName)).thenReturn(Optional.of(axePersistence));
 
-        PlayerCharacterDTO gimliDTO = new PlayerCharacterDTO(
+        PlayerCharacter gimliDTO = new PlayerCharacter(
                 gimliPersistence.getName(),
                 gimliPersistence.getStats()
         );
