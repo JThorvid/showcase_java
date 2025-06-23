@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/characters")
@@ -30,12 +31,15 @@ public class CharacterController {
 
     @GetMapping(path = "/{name}")
     public ResponseEntity<PlayerCharacter> getCharacter(@PathVariable String name) {
-        List<DomainEvent> events = eventStore.getEvents(name);
-        if (events.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(PlayerCharacter.rehydrate(events));
+        Optional<PlayerCharacter> pc = eventStore.getCharacter(name);
+        return pc.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+//
+//        List<DomainEvent> events = eventStore.getEvents(name);
+//        if (events.isEmpty()) {
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        return ResponseEntity.ok(PlayerCharacter.rehydrate(events));
     }
 
     @PostMapping
