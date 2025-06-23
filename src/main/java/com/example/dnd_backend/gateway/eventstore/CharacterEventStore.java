@@ -1,10 +1,9 @@
-package com.example.dnd_backend.eventstore;
+package com.example.dnd_backend.gateway.eventstore;
 
 import com.example.dnd_backend.entities.PlayerCharacter;
-import com.example.dnd_backend.events.CharacterCreated;
-import com.example.dnd_backend.events.CharacterUpdated;
-import com.example.dnd_backend.events.DomainEvent;
-import com.example.dnd_backend.events.ItemAdded;
+import com.example.dnd_backend.gateway.events.CharacterCreated;
+import com.example.dnd_backend.gateway.events.CharacterUpdated;
+import com.example.dnd_backend.gateway.events.DomainEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
@@ -52,8 +51,9 @@ public class CharacterEventStore {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "dnd-backend-consumer-manual");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, OffsetResetStrategy.EARLIEST.name().toLowerCase());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.example.dnd_backend");  // Or use your.package.name
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.dnd_backend.events.DomainEvent");
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.example.dnd_backend.*");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.dnd_backend.gateway.events.DomainEvent");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false); // ignore the embedded __TypeId__ header
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
         return new KafkaConsumer<>(props);
@@ -72,7 +72,7 @@ public class CharacterEventStore {
 
             // Poll until we get all events for this character
             while (true) {
-                ConsumerRecords<String, DomainEvent> records = consumer.poll(Duration.ofMillis(10000));
+                ConsumerRecords<String, DomainEvent> records = consumer.poll(Duration.ofMillis(100));
 
                 if (records.isEmpty()) {
                     break;

@@ -1,4 +1,4 @@
-package com.example.dnd_backend.events;
+package com.example.dnd_backend.gateway.events;
 
 import com.example.dnd_backend.entities.CharacterStats;
 import lombok.Data;
@@ -8,9 +8,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class CharacterUpdated extends DomainEvent {
     private final CharacterStats stats;
+    public static final String TYPE = "CHARACTER_UPDATED";
 
     public CharacterUpdated(String characterName, CharacterStats stats) {
-        super(characterName, "CHARACTER_UPDATED");
+        super(characterName, TYPE);
         this.stats = stats;
     }
 }

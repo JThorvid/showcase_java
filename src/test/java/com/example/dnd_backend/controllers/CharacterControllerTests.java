@@ -1,8 +1,9 @@
 package com.example.dnd_backend.controllers;
 
 import com.example.dnd_backend.entities.PlayerCharacter;
-import com.example.dnd_backend.events.CharacterCreated;
-import com.example.dnd_backend.eventstore.CharacterEventStore;
+import com.example.dnd_backend.gateway.controllers.CharacterController;
+import com.example.dnd_backend.gateway.events.CharacterCreated;
+import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
 import com.example.dnd_backend.entities.CharacterStats;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

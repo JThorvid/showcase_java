@@ -1,4 +1,4 @@
-package com.example.dnd_backend.events;
+package com.example.dnd_backend.gateway.events;
 
 import com.example.dnd_backend.entities.PlayerCharacter;
 import lombok.Data;
@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class CharacterCreated extends DomainEvent {
     private final PlayerCharacter character;
-    private static final String TYPE = "CHARACTER_CREATED";
+    public static final String TYPE = "CHARACTER_CREATED";
 
     // required for serialization
     public CharacterCreated() {

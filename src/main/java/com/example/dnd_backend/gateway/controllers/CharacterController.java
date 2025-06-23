@@ -1,9 +1,9 @@
-package com.example.dnd_backend.controllers;
+package com.example.dnd_backend.gateway.controllers;
 
 import com.example.dnd_backend.entities.PlayerCharacter;
-import com.example.dnd_backend.events.CharacterCreated;
-import com.example.dnd_backend.events.DomainEvent;
-import com.example.dnd_backend.eventstore.CharacterEventStore;
+import com.example.dnd_backend.gateway.events.CharacterCreated;
+import com.example.dnd_backend.gateway.events.DomainEvent;
+import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

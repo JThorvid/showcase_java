@@ -1,4 +1,4 @@
-package com.example.dnd_backend.controllers;
+package com.example.dnd_backend.gateway.controllers;
 
 import com.example.dnd_backend.entities.ItemDTO;
 import lombok.AllArgsConstructor;

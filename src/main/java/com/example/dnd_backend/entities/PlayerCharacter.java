@@ -1,8 +1,8 @@
 package com.example.dnd_backend.entities;
 
-import com.example.dnd_backend.events.CharacterCreated;
-import com.example.dnd_backend.events.CharacterUpdated;
-import com.example.dnd_backend.events.DomainEvent;
+import com.example.dnd_backend.gateway.events.CharacterCreated;
+import com.example.dnd_backend.gateway.events.CharacterUpdated;
+import com.example.dnd_backend.gateway.events.DomainEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;

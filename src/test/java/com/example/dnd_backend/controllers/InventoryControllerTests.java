@@ -3,6 +3,7 @@ package com.example.dnd_backend.controllers;
 import com.example.dnd_backend.entities.CharacterStats;
 import com.example.dnd_backend.entities.ItemDTO;
 import com.example.dnd_backend.entities.PlayerCharacter;
+import com.example.dnd_backend.gateway.controllers.InventoryController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
