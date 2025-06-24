@@ -18,27 +18,18 @@ import java.util.List;
 public class PlayerCharacter {
     private String name;
     private CharacterStats stats;
-//    private List<ItemDTO> inventory;
 
     public PlayerCharacter(String name, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma) {
         this(name, new CharacterStats(strength, dexterity, constitution, intelligence, wisdom, charisma));
     }
 
-    public static PlayerCharacter rehydrate(List<DomainEvent> events) {
-        PlayerCharacter pc = new PlayerCharacter();
-        for (DomainEvent event : events) {
-            pc.apply(event);
-        }
-        return pc;
-    }
-
-    private void apply(DomainEvent event) {
+    public void apply(DomainEvent event) {
         if (event instanceof CharacterCreated e) {
             this.name = e.getName();
             this.stats = e.getCharacter().getStats();
         } else if (event instanceof CharacterUpdated e) {
             this.name = e.getName();
-            this.stats = e.getStats();
+            this.stats = e.getCharacter().getStats();
         }
     }
 }
