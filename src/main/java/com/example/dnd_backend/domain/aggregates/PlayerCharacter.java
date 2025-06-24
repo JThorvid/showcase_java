@@ -24,10 +24,7 @@ public class PlayerCharacter {
     }
 
     public void apply(DomainEvent event) {
-        if (event instanceof CharacterCreated e) {
-            this.name = e.getName();
-            this.stats = e.getCharacter().getStats();
-        } else if (event instanceof CharacterUpdated e) {
+        if (event instanceof CharacterUpdated e) {
             this.name = e.getName();
             this.stats = e.getCharacter().getStats();
         }
