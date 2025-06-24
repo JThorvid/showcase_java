@@ -19,10 +19,6 @@ public class PlayerCharacter {
     private String name;
     private CharacterStats stats;
 
-    public PlayerCharacter(String name, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma) {
-        this(name, new CharacterStats(strength, dexterity, constitution, intelligence, wisdom, charisma));
-    }
-
     public void apply(DomainEvent event) {
         if (event instanceof CharacterUpdated e) {
             this.name = e.getName();
