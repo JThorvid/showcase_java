@@ -1,6 +1,6 @@
-package com.example.dnd_backend.gateway.events;
+package com.example.dnd_backend.domain.events;
 
-import com.example.dnd_backend.entities.PlayerCharacter;
+import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

@@ -1,6 +1,6 @@
-package com.example.dnd_backend.entities;
+package com.example.dnd_backend.domain.entities;
 
-public record ItemDTO(
+public record Item(
         String name,
         String description,
         double weight

@@ -1,8 +1,8 @@
 package com.example.dnd_backend.controllers;
 
-import com.example.dnd_backend.entities.CharacterStats;
-import com.example.dnd_backend.entities.ItemDTO;
-import com.example.dnd_backend.entities.PlayerCharacter;
+import com.example.dnd_backend.domain.entities.CharacterStats;
+import com.example.dnd_backend.domain.entities.Item;
+import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.gateway.controllers.InventoryController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +37,8 @@ class InventoryControllerTests {
 //        gandalfPersistence.addItem(staffPersistence);
 //        gandalfPersistence.addItem(pipePersistence);
 
-        ItemDTO staffDTO = new ItemDTO("Staff of Power", "A mighty staff", 2.0);
-        ItemDTO pipeDTO = new ItemDTO("Longbottom Leaf Pipe", "A fine pipe", 0.2);
+        Item staffDTO = new Item("Staff of Power", "A mighty staff", 2.0);
+        Item pipeDTO = new Item("Longbottom Leaf Pipe", "A fine pipe", 0.2);
 
 //        when(characterRepository.findByName(characterName)).thenReturn(Optional.of(gandalfPersistence));
 

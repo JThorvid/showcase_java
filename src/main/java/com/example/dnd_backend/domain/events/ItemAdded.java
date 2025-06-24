@@ -1,4 +1,4 @@
-package com.example.dnd_backend.gateway.events;
+package com.example.dnd_backend.domain.events;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

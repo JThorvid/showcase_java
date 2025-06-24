@@ -1,6 +1,6 @@
 package com.example.dnd_backend.controllers;
 
-import com.example.dnd_backend.entities.ItemDTO;
+import com.example.dnd_backend.domain.entities.Item;
 import com.example.dnd_backend.gateway.controllers.ItemController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ class ItemControllerTests {
 
     @Test
     void testGetItems() throws Exception {
-        ItemDTO swordDTO = new ItemDTO("Sword", "A sharp sword", 1.5);
-        ItemDTO shieldDTO = new ItemDTO("Shield", "A sturdy shield", 5.0);
+        Item swordDTO = new Item("Sword", "A sharp sword", 1.5);
+        Item shieldDTO = new Item("Shield", "A sturdy shield", 5.0);
 
 //        when(itemRepository.findAll()).thenReturn(List.of(swordPersistence, shieldPersistence));
 
@@ -35,7 +35,7 @@ class ItemControllerTests {
 
     @Test
     void testGetItem() throws Exception {
-        ItemDTO swordDTO = new ItemDTO("Sword", "A sharp sword", 1.5);
+        Item swordDTO = new Item("Sword", "A sharp sword", 1.5);
 
 //        when(itemRepository.findByName("Sword")).thenReturn(Optional.of(swordPersistence));
 
@@ -55,7 +55,7 @@ class ItemControllerTests {
 
     @Test
     void testCreateItem() throws Exception {
-        ItemDTO newItemDTO = new ItemDTO("Potion", "A healing potion", 0.5);
+        Item newItem = new Item("Potion", "A healing potion", 0.5);
 
 //        when(itemRepository.save(any(ItemPersistenceDTO.class))).thenReturn(savedPotion);
 

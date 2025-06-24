@@ -1,6 +1,6 @@
 package com.example.dnd_backend.gateway.controllers;
 
-import com.example.dnd_backend.entities.ItemDTO;
+import com.example.dnd_backend.domain.entities.Item;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ public class ItemController {
     //    private final ItemRepository itemRepository;
 
     @GetMapping
-    public List<ItemDTO> getItems() {
+    public List<Item> getItems() {
 //        return StreamSupport.stream(itemRepository.findAll().spliterator(), false)
 //                .map(adapter::toItemDTO)
 //                .toList();
@@ -22,7 +22,7 @@ public class ItemController {
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<ItemDTO> getItem(@PathVariable String name) {
+    public ResponseEntity<Item> getItem(@PathVariable String name) {
 //        return itemRepository.findByName(name)
 //                .map(adapter::toItemDTO)
 //                .map(ResponseEntity::ok)
@@ -31,7 +31,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
+    public ResponseEntity<Item> createItem(@RequestBody Item item) {
 //        ItemPersistenceDTO toSave = adapter.fromItemDTO(itemDTO);
 //        ItemPersistenceDTO saved = itemRepository.save(toSave);
 //        ItemDTO item = adapter.toItemDTO(saved);

@@ -1,10 +1,11 @@
 package com.example.dnd_backend.controllers;
 
-import com.example.dnd_backend.entities.PlayerCharacter;
+import com.example.dnd_backend.application.CharacterManager;
+import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.gateway.controllers.CharacterController;
-import com.example.dnd_backend.gateway.events.CharacterCreated;
+import com.example.dnd_backend.domain.events.CharacterCreated;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
-import com.example.dnd_backend.entities.CharacterStats;
+import com.example.dnd_backend.domain.entities.CharacterStats;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,6 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CharacterControllerTests {
     @MockitoBean
     private CharacterEventStore eventStore;
+
+    @MockitoBean
+    private CharacterManager characterManager;
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,9 +51,9 @@ class CharacterControllerTests {
         CharacterStats bobStats = new CharacterStats(18, 8, 16, 12, 8, 19);
         PlayerCharacter playerCharacter = new PlayerCharacter("Bob", bobStats);
 
-        CharacterController controller = new CharacterController(eventStore);
+        CharacterController controller = new CharacterController(eventStore, characterManager);
 
-        ResponseEntity<PlayerCharacter> actual = controller.createCharacter(playerCharacter);
+        ResponseEntity<?> actual = controller.createCharacter(playerCharacter);
 
         assertEquals(HttpStatus.OK, actual.getStatusCode());
         assertNotNull(actual.getBody());

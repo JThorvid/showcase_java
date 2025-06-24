@@ -1,4 +1,4 @@
-package com.example.dnd_backend.entities;
+package com.example.dnd_backend.domain.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

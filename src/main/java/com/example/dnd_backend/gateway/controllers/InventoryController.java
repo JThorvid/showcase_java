@@ -1,7 +1,7 @@
 package com.example.dnd_backend.gateway.controllers;
 
-import com.example.dnd_backend.entities.ItemDTO;
-import com.example.dnd_backend.entities.PlayerCharacter;
+import com.example.dnd_backend.domain.entities.Item;
+import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class InventoryController {
     @GetMapping(path = "/inventory")
-    public ResponseEntity<List<ItemDTO>> getCharacterInventory(@PathVariable String characterName) {
+    public ResponseEntity<List<Item>> getCharacterInventory(@PathVariable String characterName) {
 //        Optional<PlayerCharacterPersistenceDTO> characterPersistenceDTO = characterRepository.findByName(characterName);
 //        if (characterPersistenceDTO.isPresent()) {
 //            Set<ItemPersistenceDTO> inventory = characterPersistenceDTO.get().getInventory();

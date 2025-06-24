@@ -1,4 +1,4 @@
-package com.example.dnd_backend.gateway.events;
+package com.example.dnd_backend.domain.events;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
