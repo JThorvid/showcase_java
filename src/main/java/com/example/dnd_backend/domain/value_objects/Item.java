@@ -1,4 +1,4 @@
-package com.example.dnd_backend.domain.entities;
+package com.example.dnd_backend.domain.value_objects;
 
 public record Item(
         String name,

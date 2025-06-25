@@ -22,7 +22,7 @@ public class EventListener {
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void onEvent(DomainEvent event) {
-        String message = String.format("processing this event: %s %s", event.getName(), event.getType());
+        String message = String.format("processing this event: %s %s", event.name(), event.getType());
         logger.info(message);
         projector.processEvent(event);
     }

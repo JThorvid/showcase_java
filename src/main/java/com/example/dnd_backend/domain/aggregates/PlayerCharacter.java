@@ -1,15 +1,12 @@
 package com.example.dnd_backend.domain.aggregates;
 
-import com.example.dnd_backend.domain.entities.CharacterStats;
-import com.example.dnd_backend.domain.events.CharacterCreated;
 import com.example.dnd_backend.domain.events.CharacterUpdated;
 import com.example.dnd_backend.domain.events.DomainEvent;
+import com.example.dnd_backend.domain.value_objects.CharacterStats;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Getter
 @Data
@@ -21,8 +18,8 @@ public class PlayerCharacter {
 
     public void apply(DomainEvent event) {
         if (event instanceof CharacterUpdated e) {
-            this.name = e.getName();
-            this.stats = e.getCharacter().getStats();
+            this.name = e.name();
+            this.stats = e.character().getStats();
         }
     }
 }

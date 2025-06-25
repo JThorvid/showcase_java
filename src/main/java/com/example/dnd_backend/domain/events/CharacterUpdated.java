@@ -1,23 +1,17 @@
 package com.example.dnd_backend.domain.events;
 
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class CharacterUpdated extends DomainEvent {
-    private final PlayerCharacter character;
+public record CharacterUpdated(String name, long timestamp, PlayerCharacter character)
+        implements DomainEvent {
     public static final String TYPE = "CHARACTER_UPDATED";
 
-    // required for serialization
-    public CharacterUpdated() {
-        super("", TYPE);
-        this.character = new PlayerCharacter();
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
-    public CharacterUpdated(PlayerCharacter playerCharacter) {
-        super(playerCharacter.getName(), TYPE);
-        this.character = playerCharacter;
+    public CharacterUpdated(PlayerCharacter character) {
+        this(character.getName(), System.currentTimeMillis(), character);
     }
 }

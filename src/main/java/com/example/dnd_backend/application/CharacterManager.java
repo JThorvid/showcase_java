@@ -34,9 +34,9 @@ public class CharacterManager implements CharacterProjector {
     @Override
     public void processEvent(DomainEvent event) {
         if (event instanceof CharacterCreated characterCreated) {
-            characters.add(characterCreated.getCharacter());
+            characters.add(characterCreated.character());
         } else {
-            String characterName = event.getName();
+            String characterName = event.name();
             characters.stream()
                     .filter(it -> it.getName().equals(characterName))
                     .findFirst()

@@ -1,6 +1,6 @@
 package com.example.dnd_backend.gateway.controllers;
 
-import com.example.dnd_backend.domain.entities.Item;
+import com.example.dnd_backend.domain.value_objects.Item;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

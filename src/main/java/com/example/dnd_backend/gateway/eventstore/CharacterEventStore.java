@@ -14,6 +14,6 @@ public class CharacterEventStore implements EventRepository {
     private final KafkaTemplate<String, DomainEvent> kafkaTemplate;
 
     public void sendEvent(DomainEvent event) {
-        kafkaTemplate.send(CHARACTER_EVENTS_TOPIC, event.getName(), event);
+        kafkaTemplate.send(CHARACTER_EVENTS_TOPIC, event.name(), event);
     }
 }

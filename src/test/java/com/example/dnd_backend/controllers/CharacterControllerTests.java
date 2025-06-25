@@ -2,11 +2,11 @@ package com.example.dnd_backend.controllers;
 
 import com.example.dnd_backend.application.CharacterManager;
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
-import com.example.dnd_backend.domain.events.CharacterUpdated;
-import com.example.dnd_backend.gateway.controllers.CharacterController;
 import com.example.dnd_backend.domain.events.CharacterCreated;
+import com.example.dnd_backend.domain.events.CharacterUpdated;
+import com.example.dnd_backend.domain.value_objects.CharacterStats;
+import com.example.dnd_backend.gateway.controllers.CharacterController;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
-import com.example.dnd_backend.domain.entities.CharacterStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

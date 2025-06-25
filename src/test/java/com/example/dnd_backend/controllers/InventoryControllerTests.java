@@ -1,21 +1,20 @@
 package com.example.dnd_backend.controllers;
 
-import com.example.dnd_backend.domain.entities.CharacterStats;
-import com.example.dnd_backend.domain.entities.Item;
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
+import com.example.dnd_backend.domain.value_objects.CharacterStats;
+import com.example.dnd_backend.domain.value_objects.Item;
 import com.example.dnd_backend.gateway.controllers.InventoryController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 @WebMvcTest(InventoryController.class)
 class InventoryControllerTests {
