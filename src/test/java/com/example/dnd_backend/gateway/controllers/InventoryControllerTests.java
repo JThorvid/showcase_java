@@ -8,6 +8,7 @@ import com.example.dnd_backend.domain.events.ItemAdded;
 import com.example.dnd_backend.domain.events.ItemRemoved;
 import com.example.dnd_backend.domain.value_objects.Item;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
+import org.approvaltests.Approvals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -58,11 +59,12 @@ class InventoryControllerTests {
         // given a character with an item
         Mockito.when(character.getInventory()).thenReturn(inventory);
         Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.of(character));
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
         // when the inventory is requested
-        ResponseEntity<Inventory> response = controller.getCharacterInventory(character.getName());
+        ResponseEntity<Object> response = controller.getCharacterInventory(character.getName());
         // then the item is returned
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(inventory, response.getBody());
+        Approvals.verify(response.getBody());
     }
 
     @Test
@@ -70,8 +72,8 @@ class InventoryControllerTests {
         // given no character
         Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.empty());
         // when the inventory is requested
-        ResponseEntity<Inventory> response = controller.getCharacterInventory(character.getName());
-        // the a "not found is returned
+        ResponseEntity<Object> response = controller.getCharacterInventory(character.getName());
+        // then a "not found is returned
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 

@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -24,11 +26,25 @@ public class InventoryController {
     private Projector<Item> itemManager;
 
     @GetMapping(path = "/inventory")
-    public ResponseEntity<Inventory> getCharacterInventory(@PathVariable String characterName) {
+    public ResponseEntity<Object> getCharacterInventory(@PathVariable String characterName) {
         Optional<PlayerCharacter> character = characterManager.getByName(characterName);
-        return character
-                .map(pc -> new ResponseEntity<>(pc.getInventory(), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        if (character.isPresent()) {
+            List<ItemDTO> inventoryDTO = new ArrayList<>();
+            Inventory inventory = character.get().getInventory();
+            for (String itemName : inventory.getCountPerItem().keySet()) {
+                Optional<Item> item = itemManager.getByName(itemName);
+                if (item.isEmpty()) {
+                    String message = String.format("The inventory is corrupt. %s is in the inventory but does not exist.", itemName);
+                    return ResponseEntity.internalServerError().body(message);
+                } else {
+                    Item thisItem = item.get();
+                    inventoryDTO.add(new ItemDTO(thisItem, inventory.getCountPerItem().get(itemName)));
+                }
+            }
+            return ResponseEntity.ok(inventoryDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping(path = "/inventory/{itemName}")
