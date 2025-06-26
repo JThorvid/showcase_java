@@ -48,8 +48,8 @@ public class InventoryController {
             if (item.isPresent()) {
                 DomainEvent event;
                 switch (addOrRemove) {
-                    case ADD -> event = new ItemAdded(characterName, item.get());
-                    case REMOVE -> event = new ItemRemoved(characterName, item.get());
+                    case ADD -> event = new ItemAdded(characterName, item.get(), 1);
+                    case REMOVE -> event = new ItemRemoved(characterName, item.get(), 1);
                     default -> throw new IllegalArgumentException("Unknown operation: " + addOrRemove);
                 }
                 eventStore.sendEvent(event);

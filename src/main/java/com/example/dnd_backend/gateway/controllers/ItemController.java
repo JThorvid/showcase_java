@@ -74,7 +74,7 @@ public class ItemController {
     private List<PlayerCharacter> charactersThatOwnThisItem(Item item) {
         List<PlayerCharacter> characters = new ArrayList<>();
         for (PlayerCharacter player : characterManager.getAll()) {
-            if (player.getInventory().getCountPerItem().containsKey(item))
+            if (player.getInventory().getCountPerItem().containsKey(item.name()))
                 characters.add(player);
         }
         return characters;

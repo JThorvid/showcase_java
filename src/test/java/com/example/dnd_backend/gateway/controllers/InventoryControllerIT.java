@@ -29,7 +29,7 @@ class InventoryControllerIT {
 
     @BeforeEach
     void setUp() {
-        inventory.add(item);
+        inventory.add(item.name(), 1);
     }
 
     @Autowired
@@ -45,7 +45,7 @@ class InventoryControllerIT {
                 // then the item is returned
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.countPerItem").exists())
-                .andExpect(jsonPath("$.countPerItem['Item[name=Staff of power, description=super powerful, weight=8.0]']").value(1));
+                .andExpect(jsonPath("$.countPerItem['Staff of power']").value(1));
     }
 
     @Test

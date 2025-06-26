@@ -136,7 +136,7 @@ class ItemControllerTests {
         Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
         Mockito.when(characterManager.getAll()).thenReturn(List.of(character));
         Inventory inventory = new Inventory();
-        inventory.add(item);
+        inventory.add(item.name(), 1);
         Mockito.when(character.getInventory()).thenReturn(inventory);
         // when this item is deleted
         ResponseEntity<Object> response = controller.deleteItem(item.name());

@@ -26,9 +26,9 @@ public class PlayerCharacter {
             this.name = e.name();
             this.stats = e.character().getStats();
         } else if (event instanceof ItemAdded e) {
-            this.inventory.add(e.item());
+            this.inventory.add(e.item().name(), e.quantity());
         } else if (event instanceof ItemRemoved e) {
-            this.inventory.remove(e.item());
+            this.inventory.remove(e.item().name(), e.quantity());
         }
     }
 }

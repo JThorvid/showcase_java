@@ -46,7 +46,7 @@ class InventoryControllerTests {
     @BeforeEach
     void setUp() {
         controller = new InventoryController(eventStore, characterManager, itemManager);
-        inventory.add(item);
+        inventory.add(item.name(), 1);
         Mockito.when(character.getName()).thenReturn("Alice");
     }
 

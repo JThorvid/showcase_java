@@ -44,51 +44,50 @@ class CharacterManagerTest {
     void testProcessEvent_ItemAdded_doesNotExist() {
         // given a character exists and they don't have the item yet and an ItemAdded event is sent
         characterManager.processEvent(new CharacterCreated(character));
-        DomainEvent event = new ItemAdded(character.getName(), item);
+        DomainEvent event = new ItemAdded(character.getName(), item, 1);
         // when the event is processed
         characterManager.processEvent(event);
         // then the character contains the item once
-        Map<Item, Integer> inventory = character.getInventory().getCountPerItem();
-        assertEquals(1, (int) inventory.get(item));
+        Map<String, Integer> inventory = character.getInventory().getCountPerItem();
+        assertEquals(1, (int) inventory.get(item.name()));
     }
 
     @Test
     void testProcessEvent_ItemAdded_alreadyExists() {
         // given a character exists and they already have the item and an ItemAdded event is sent
         characterManager.processEvent(new CharacterCreated(character));
-        characterManager.processEvent(new ItemAdded(character.getName(), item));
-        DomainEvent event = new ItemAdded(character.getName(), item);
+        characterManager.processEvent(new ItemAdded(character.getName(), item, 1));
+        DomainEvent event = new ItemAdded(character.getName(), item, 1);
         // when the event is processed
         characterManager.processEvent(event);
         // then the character contains the item twice
-        Map<Item, Integer> inventory = character.getInventory().getCountPerItem();
-        assertEquals(2, (int) inventory.get(item));
+        Map<String, Integer> inventory = character.getInventory().getCountPerItem();
+        assertEquals(2, (int) inventory.get(item.name()));
     }
 
     @Test
     void testProcessEvent_ItemRemoved_existsTwice() {
         // given a character exists and they have the item twice and an ItemRemoved event is sent
         characterManager.processEvent(new CharacterCreated(character));
-        characterManager.processEvent(new ItemAdded(character.getName(), item));
-        characterManager.processEvent(new ItemAdded(character.getName(), item));
-        DomainEvent event = new ItemRemoved(character.getName(), item);
+        characterManager.processEvent(new ItemAdded(character.getName(), item, 2));
+        DomainEvent event = new ItemRemoved(character.getName(), item, 1);
         // when the event is processed
         characterManager.processEvent(event);
         // then the character contains the item once
-        Map<Item, Integer> inventory = character.getInventory().getCountPerItem();
-        assertEquals(1, (int) inventory.get(item));
+        Map<String, Integer> inventory = character.getInventory().getCountPerItem();
+        assertEquals(1, (int) inventory.get(item.name()));
     }
 
     @Test
     void testProcessEvent_ItemRemoved_existsOnce() {
         // given a character exists and they have the item once and an ItemRemoved event is sent
         characterManager.processEvent(new CharacterCreated(character));
-        characterManager.processEvent(new ItemAdded(character.getName(), item));
-        DomainEvent event = new ItemRemoved(character.getName(), item);
+        characterManager.processEvent(new ItemAdded(character.getName(), item, 1));
+        DomainEvent event = new ItemRemoved(character.getName(), item, 1);
         // when the event is processed
         characterManager.processEvent(event);
         // then the character contains the item once
-        Map<Item, Integer> inventory = character.getInventory().getCountPerItem();
-        assertFalse(inventory.containsKey(item));
+        Map<String, Integer> inventory = character.getInventory().getCountPerItem();
+        assertFalse(inventory.containsKey(item.name()));
     }
 }
