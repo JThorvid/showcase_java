@@ -14,4 +14,8 @@ public record CharacterStats(
         if (dexterity > 20 || intelligence > 20 || wisdom > 20 || charisma > 20)
             throw new IllegalArgumentException("most stats can never be more than 20");
     }
+
+    public CharacterStats() {
+        this(10, 10, 10, 10, 10, 10);
+    }
 }

@@ -33,14 +33,12 @@ class CharacterControllerTests {
     private CharacterManager characterManager;
 
     private CharacterController controller;
-    private PlayerCharacter alice;
-    private PlayerCharacter bob;
+    private final PlayerCharacter alice = new PlayerCharacter("Alice", new CharacterStats());
+    private final PlayerCharacter bob = new PlayerCharacter("Bob", new CharacterStats());
 
     @BeforeEach
     void setUp() {
         controller = new CharacterController(eventStore, characterManager);
-        bob = new PlayerCharacter("Bob", new CharacterStats(18, 8, 16, 12, 8, 19));
-        alice = new PlayerCharacter("Alice", new CharacterStats(8, 14, 16, 18, 12, 10));
     }
 
     @Test
@@ -56,7 +54,7 @@ class CharacterControllerTests {
     @Test
     void testGetCharacters_nonEmptyList() {
         // given two characters exist
-        Mockito.when(characterManager.getCharacters()).thenReturn(List.of(alice, bob));
+        Mockito.when(characterManager.getAll()).thenReturn(List.of(alice, bob));
         // when all characters are requested
         ResponseEntity<List<PlayerCharacter>> actual = controller.getCharacters();
         // then both characters are returned
@@ -76,7 +74,7 @@ class CharacterControllerTests {
     @Test
     void testGetCharacter_existentCharacter() {
         // given Alice exists
-        Mockito.when(characterManager.getCharacterByName(alice.getName())).thenReturn(Optional.of(alice));
+        Mockito.when(characterManager.getByName(alice.getName())).thenReturn(Optional.of(alice));
         // when Alice is requested
         ResponseEntity<PlayerCharacter> actual = controller.getCharacter(alice.getName());
         // then Alice gets returned
@@ -87,7 +85,7 @@ class CharacterControllerTests {
     @Test
     void testCreateCharacter_nonExistentCharacter() {
         // given Bob does not yet exist
-        Mockito.when(characterManager.characterExists(bob.getName())).thenReturn(false);
+        Mockito.when(characterManager.exists(bob.getName())).thenReturn(false);
         // when Bob is created
         ResponseEntity<?> actual = controller.createCharacter(bob);
         // then a CharacterCreated event gets sent
@@ -100,30 +98,32 @@ class CharacterControllerTests {
     @Test
     void testCreateCharacter_existentCharacter() {
         // given Bob exists
-        Mockito.when(characterManager.characterExists(bob.getName())).thenReturn(true);
+        Mockito.when(characterManager.exists(bob.getName())).thenReturn(true);
         // when Bob gets created again
         ResponseEntity<?> actual = controller.createCharacter(bob);
-        // then a "bad request" gets returned and no events are created
+        // then a "bad request" gets returned
         assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
+        // and no events are sent
         verifyNoInteractions(eventStore);
     }
 
     @Test
     void testUpdateCharacter_nonExistentCharacter() {
         // given Alice does not exist yet
-        Mockito.when(characterManager.characterExists(alice.getName())).thenReturn(false);
+        Mockito.when(characterManager.exists(alice.getName())).thenReturn(false);
         // when Alice gets updated
         PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
         ResponseEntity<?> actual = controller.updateCharacter(newAlice);
-        // then a "not found" gets returned and no events are created
+        // then a "not found" gets returned
         assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
+        // and no events are sent
         verifyNoInteractions(eventStore);
     }
 
     @Test
     void testUpdateCharacter_existentCharacter() {
         // given Alice exists
-        Mockito.when(characterManager.characterExists(alice.getName())).thenReturn(true);
+        Mockito.when(characterManager.exists(alice.getName())).thenReturn(true);
         // when Alice gets updated
         PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
         ResponseEntity<?> actual = controller.updateCharacter(newAlice);

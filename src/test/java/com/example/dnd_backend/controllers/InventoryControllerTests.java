@@ -1,151 +1,152 @@
 package com.example.dnd_backend.controllers;
 
+import com.example.dnd_backend.application.CharacterManager;
+import com.example.dnd_backend.application.ItemManager;
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
-import com.example.dnd_backend.domain.value_objects.CharacterStats;
+import com.example.dnd_backend.domain.entities.Inventory;
+import com.example.dnd_backend.domain.events.ItemAdded;
+import com.example.dnd_backend.domain.events.ItemRemoved;
 import com.example.dnd_backend.domain.value_objects.Item;
 import com.example.dnd_backend.gateway.controllers.InventoryController;
+import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @WebMvcTest(InventoryController.class)
 class InventoryControllerTests {
-//    @MockitoBean
-//    private CharacterRepository characterRepository;
+    @MockitoBean
+    private CharacterEventStore eventStore;
 
-//    @MockitoBean
-//    private ItemRepository itemRepository;
+    @MockitoBean
+    private CharacterManager characterManager;
+
+    @MockitoBean
+    private ItemManager itemManager;
+
+    @MockitoBean
+    private PlayerCharacter character;
+
+    private InventoryController controller;
+    private final Item item = new Item("Staff of power", "super powerful", 8);
+    private final Inventory inventory = new Inventory();
+
+    @BeforeEach
+    void setUp() {
+        controller = new InventoryController(eventStore, characterManager, itemManager);
+        inventory.add(item);
+        Mockito.when(character.getName()).thenReturn("Alice");
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void testGetCharacterInventory() throws Exception {
-        String characterName = "Gandalf";
-
-        CharacterStats gandalfStats = new CharacterStats(10, 10, 10, 18, 18, 14);
-//        PlayerCharacterPersistenceDTO gandalfPersistence = new PlayerCharacterPersistenceDTO(1L, characterName, gandalfStats, new HashSet<>());
-//        gandalfPersistence.addItem(staffPersistence);
-//        gandalfPersistence.addItem(pipePersistence);
-
-        Item staffDTO = new Item("Staff of Power", "A mighty staff", 2.0);
-        Item pipeDTO = new Item("Longbottom Leaf Pipe", "A fine pipe", 0.2);
-
-//        when(characterRepository.findByName(characterName)).thenReturn(Optional.of(gandalfPersistence));
-
-        mockMvc.perform(get("/characters/{characterName}/inventory", characterName))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[*].name", containsInAnyOrder("Staff of Power", "Longbottom Leaf Pipe")))
-                .andExpect(jsonPath("$.[?(@.name == 'Staff of Power')].description").value(hasItem("A mighty staff")))
-                .andExpect(jsonPath("$.[?(@.name == 'Staff of Power')].weight").value(hasItem(2.0)))
-                .andExpect(jsonPath("$.[?(@.name == 'Longbottom Leaf Pipe')].description").value(hasItem("A fine pipe")))
-                .andExpect(jsonPath("$.[?(@.name == 'Longbottom Leaf Pipe')].weight").value(hasItem(0.2)));
-
-//        verify(characterRepository).findByName(characterName);
+    void testGetCharacterInventory() {
+        // given a character with an item
+        Mockito.when(character.getInventory()).thenReturn(inventory);
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.of(character));
+        // when the inventory is requested
+        ResponseEntity<Inventory> response = controller.getCharacterInventory(character.getName());
+        // then the item is returned
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(inventory, response.getBody());
     }
 
     @Test
-    void testGetCharacterInventory_characterNotFound() throws Exception {
-        String characterName = "Bilbo";
-//        when(characterRepository.findByName(characterName)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/characters/{characterName}/inventory", characterName))
-                .andExpect(status().isNotFound());
-//        verify(characterRepository).findByName(characterName);
+    void testGetCharacterInventory_characterNotFound() {
+        // given no character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.empty());
+        // when the inventory is requested
+        ResponseEntity<Inventory> response = controller.getCharacterInventory(character.getName());
+        // the a "not found is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void testAddItemToInventory() throws Exception {
-        String characterName = "Aragorn";
-        String itemName = "Anduril";
-        CharacterStats aragornStats = new CharacterStats(15, 18, 14, 13, 13, 16);
-
-//        when(characterRepository.findByName(characterName)).thenReturn(Optional.of(aragornPersistence));
-//        when(itemRepository.findByName(itemName)).thenReturn(Optional.of(andurilPersistence));
-//        when(characterRepository.save(any(PlayerCharacterPersistenceDTO.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        PlayerCharacter aragornDTO = new PlayerCharacter(characterName, aragornStats);
-
-        mockMvc.perform(post("/characters/{characterName}/inventory/{itemName}", characterName, itemName))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(characterName))
-                .andExpect(jsonPath("$.stats.strength").value(15));
-
-//        verify(characterRepository).findByName(characterName);
-//        verify(itemRepository).findByName(itemName);
-//        verify(characterRepository).save(aragornPersistence);
-//        assertEquals(1, aragornPersistence.getInventory().size());
-//        assertTrue(aragornPersistence.getInventory().contains(andurilPersistence));
+    void testAddItemToInventory() {
+        // given a character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.of(character));
+        // when an existing item is added to its inventory
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        controller.addItemToInventory(character.getName(), item.name());
+        // then an ItemAdded event is sent
+        verify(eventStore).sendEvent(any(ItemAdded.class));
     }
 
     @Test
-    void testAddItemToInventory_characterNotFound() throws Exception {
-//        when(characterRepository.findByName("NonExistent")).thenReturn(Optional.empty());
-//        when(itemRepository.findByName("SomeItem")).thenReturn(Optional.of(new ItemPersistenceDTO(1L, "SomeItem", "Desc", 1.0, new HashSet<>())));
-
-        mockMvc.perform(post("/characters/NonExistent/inventory/SomeItem"))
-                .andExpect(status().isNotFound());
+    void testAddItemToInventory_characterNotFound() {
+        // given a non-existing character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.empty());
+        // when an existing item is added to its inventory
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        ResponseEntity<Object> response = controller.addItemToInventory(character.getName(), item.name());
+        // then a "not found" is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
     }
 
     @Test
-    void testAddItemToInventory_itemNotFound() throws Exception {
-        CharacterStats someStats = new CharacterStats(10, 10, 10, 10, 10, 10);
-//        when(characterRepository.findByName("SomeCharacter")).thenReturn(Optional.of(new PlayerCharacterPersistenceDTO(1L, "SomeCharacter", someStats, new HashSet<>())));
-//        when(itemRepository.findByName("NonExistentItem")).thenReturn(Optional.empty());
-
-        mockMvc.perform(post("/characters/SomeCharacter/inventory/NonExistentItem"))
-                .andExpect(status().isNotFound());
+    void testAddItemToInventory_itemNotFound() {
+        // given a character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.of(character));
+        // when a non-existing item is added to its inventory
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.empty());
+        ResponseEntity<Object> response = controller.addItemToInventory(character.getName(), item.name());
+        // then a "not found" is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
     }
 
     @Test
-    void testRemoveItemFromInventory() throws Exception {
-        String characterName = "Legolas";
-        String itemName = "Bow of the Galadhrim";
-        CharacterStats legolasStats = new CharacterStats(12, 20, 12, 15, 16, 14);
-        PlayerCharacter legolasDTO = new PlayerCharacter(characterName, legolasStats);
-//        legolasDTO.addItem(bowPersistence);
-
-//        when(characterRepository.findByName(characterName)).thenReturn(Optional.of(legolasPersistence));
-//        when(itemRepository.findByName(itemName)).thenReturn(Optional.of(bowPersistence));
-//        when(characterRepository.save(any(PlayerCharacterPersistenceDTO.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        mockMvc.perform(delete("/characters/{characterName}/inventory/{itemName}", characterName, itemName))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(characterName))
-                .andExpect(jsonPath("$.stats.dexterity").value(20));
-
-//        verify(characterRepository).findByName(characterName);
-//        verify(itemRepository).findByName(itemName);
-//        verify(characterRepository).save(legolasPersistence);
-//        assertEquals(0, legolasPersistence.getInventory().size());
-//        assertFalse(legolasPersistence.getInventory().contains(bowPersistence));
+    void testRemoveItemFromInventory() {
+        // given a character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.of(character));
+        // when an existing item is removed from its inventory
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        controller.removeItemFromInventory(character.getName(), item.name());
+        // then an ItemRemoved event is sent
+        verify(eventStore).sendEvent(any(ItemRemoved.class));
     }
 
     @Test
-    void testRemoveItemFromInventory_itemNotInInventory() throws Exception {
-        String characterName = "Gimli";
-        String itemName = "Battle Axe";
-        CharacterStats gimliStats = new CharacterStats(16, 14, 18, 10, 12, 10);
+    void testRemoveItemFromInventory_characterNotFound() {
+        // given a non-existing character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.empty());
+        // when an existing item is removed from its inventory
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        ResponseEntity<Object> response = controller.removeItemFromInventory(character.getName(), item.name());
+        // then a "not found" is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
+    }
 
-//        when(characterRepository.findByName(characterName)).thenReturn(Optional.of(gimliPersistence));
-//        when(itemRepository.findByName(itemName)).thenReturn(Optional.of(axePersistence));
-
-        PlayerCharacter gimliDTO = new PlayerCharacter(characterName, gimliStats);
-
-        mockMvc.perform(delete("/characters/{characterName}/inventory/{itemName}", characterName, itemName))
-                .andExpect(status().isBadRequest());
-
-//        verify(characterRepository).findByName(characterName);
-//        verify(itemRepository).findByName(itemName);
-//        verify(characterRepository, never()).save(any(PlayerCharacterPersistenceDTO.class));
+    @Test
+    void testRemoveItemFromInventory_itemNotFound() {
+        // given a character
+        Mockito.when(characterManager.getByName(character.getName())).thenReturn(Optional.of(character));
+        // when a non-existing item is removed from its inventory
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.empty());
+        ResponseEntity<Object> response = controller.removeItemFromInventory(character.getName(), item.name());
+        // then a "not found" is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
     }
 }

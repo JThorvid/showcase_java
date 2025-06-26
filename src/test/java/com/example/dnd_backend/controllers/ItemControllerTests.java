@@ -1,68 +1,148 @@
 package com.example.dnd_backend.controllers;
 
+import com.example.dnd_backend.application.CharacterManager;
+import com.example.dnd_backend.application.ItemManager;
+import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
+import com.example.dnd_backend.domain.entities.Inventory;
+import com.example.dnd_backend.domain.events.ItemCreated;
+import com.example.dnd_backend.domain.events.ItemDestroyed;
 import com.example.dnd_backend.domain.value_objects.Item;
 import com.example.dnd_backend.gateway.controllers.ItemController;
+import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @WebMvcTest(ItemController.class)
 class ItemControllerTests {
-    @Autowired
-    private MockMvc mockMvc;
+    @MockitoBean
+    private ItemManager itemManager;
 
-    @Test
-    void testGetItems() throws Exception {
-        Item swordDTO = new Item("Sword", "A sharp sword", 1.5);
-        Item shieldDTO = new Item("Shield", "A sturdy shield", 5.0);
+    @MockitoBean
+    private CharacterManager characterManager;
 
-//        when(itemRepository.findAll()).thenReturn(List.of(swordPersistence, shieldPersistence));
+    @MockitoBean
+    private CharacterEventStore eventStore;
 
-        mockMvc.perform(get("/items"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].name").value("Sword"))
-                .andExpect(jsonPath("$[1].name").value("Shield"));
+    private ItemController controller;
+
+    @MockitoBean
+    private PlayerCharacter character;
+
+    private final Item item = new Item("Sword", "A sharp sword", 1.5);
+
+    @BeforeEach
+    void setUp() {
+        controller = new ItemController(eventStore, itemManager, characterManager);
     }
 
     @Test
-    void testGetItem() throws Exception {
-        Item swordDTO = new Item("Sword", "A sharp sword", 1.5);
-
-//        when(itemRepository.findByName("Sword")).thenReturn(Optional.of(swordPersistence));
-
-        mockMvc.perform(get("/items/Sword"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Sword"))
-                .andExpect(jsonPath("$.description").value("A sharp sword"));
+    void testGetItems() {
+        // given an item
+        Mockito.when(itemManager.getAll()).thenReturn(List.of(item));
+        // when all items are requested
+        List<Item> items = controller.getItems();
+        // then the item is returned in a list
+        assertTrue(items.contains(item));
     }
 
     @Test
-    void testGetItem_notFound() throws Exception {
-//        when(itemRepository.findByName("NonExistentItem")).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/items/NonExistentItem"))
-                .andExpect(status().isNotFound());
+    void testGetItem() {
+        // given an item
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        // when this item is requested
+        ResponseEntity<Item> response = controller.getItem(item.name());
+        // then the item is returned
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(item, response.getBody());
     }
 
     @Test
-    void testCreateItem() throws Exception {
-        Item newItem = new Item("Potion", "A healing potion", 0.5);
-
-//        when(itemRepository.save(any(ItemPersistenceDTO.class))).thenReturn(savedPotion);
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Potion\",\"description\":\"A healing potion\",\"weight\":0.5}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Potion"));
+    void testGetItem_notFound() {
+        // given no item
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.empty());
+        // when this item is requested
+        ResponseEntity<Item> response = controller.getItem(item.name());
+        // then a "not found" is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
-} 
+
+    @Test
+    void testCreateItem() {
+        // given the item does not exist yet
+        Mockito.when(itemManager.exists(item.name())).thenReturn(false);
+        // when this item is created
+        ResponseEntity<Item> response = controller.createItem(item);
+        // then the item is returned
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(item, response.getBody());
+        // and an Item Created event is sent
+        verify(eventStore).sendEvent(any(ItemCreated.class));
+    }
+
+    @Test
+    void testCreateItem_alreadyExists() {
+        // given the item already exists
+        Mockito.when(itemManager.exists(item.name())).thenReturn(true);
+        // when this item is created
+        ResponseEntity<Item> response = controller.createItem(item);
+        // then a "bad request" is returned
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
+    }
+
+    @Test
+    void testDeleteItem() {
+        // given the item exists and is not owned by anyone
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        Mockito.when(characterManager.getAll()).thenReturn(List.of(character));
+        Inventory emptyInventory = new Inventory();
+        Mockito.when(character.getInventory()).thenReturn(emptyInventory);
+        // when this item is deleted
+        controller.deleteItem(item.name());
+        // then a ItemDestroyed event is sent
+        verify(eventStore).sendEvent(any(ItemDestroyed.class));
+    }
+
+    @Test
+    void testDeleteItem_notFound() {
+        // given the item does not exists
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.empty());
+        // when this item is deleted
+        ResponseEntity<Object> response = controller.deleteItem(item.name());
+        // then a "not found" is returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
+    }
+
+    @Test
+    void testDeleteItem_owned() {
+        // given the item exists, but is owned by someone
+        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        Mockito.when(characterManager.getAll()).thenReturn(List.of(character));
+        Inventory inventory = new Inventory();
+        inventory.add(item);
+        Mockito.when(character.getInventory()).thenReturn(inventory);
+        // when this item is deleted
+        ResponseEntity<Object> response = controller.deleteItem(item.name());
+        // then a "bad request" is returned
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        // and no events are sent
+        verifyNoInteractions(eventStore);
+    }
+}

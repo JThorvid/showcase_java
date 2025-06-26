@@ -9,8 +9,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = CharacterUpdated.class, name = CharacterUpdated.TYPE),
         @JsonSubTypes.Type(value = ItemAdded.class, name = ItemAdded.TYPE),
         @JsonSubTypes.Type(value = ItemRemoved.class, name = ItemRemoved.TYPE),
+        @JsonSubTypes.Type(value = ItemCreated.class, name = ItemCreated.TYPE),
+        @JsonSubTypes.Type(value = ItemDestroyed.class, name = ItemDestroyed.TYPE),
 })
-public sealed interface DomainEvent permits CharacterCreated, CharacterUpdated, ItemAdded, ItemRemoved {
+public sealed interface DomainEvent
+        permits CharacterCreated, CharacterUpdated, ItemAdded, ItemRemoved, ItemCreated, ItemDestroyed {
     String name();
 
     String getType();
