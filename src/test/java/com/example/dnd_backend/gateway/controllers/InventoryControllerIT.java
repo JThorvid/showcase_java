@@ -1,10 +1,9 @@
-package com.example.dnd_backend.controllers;
+package com.example.dnd_backend.gateway.controllers;
 
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.domain.entities.Inventory;
 import com.example.dnd_backend.domain.value_objects.CharacterStats;
 import com.example.dnd_backend.domain.value_objects.Item;
-import com.example.dnd_backend.gateway.controllers.InventoryController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

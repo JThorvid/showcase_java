@@ -2,6 +2,8 @@ package com.example.dnd_backend.application;
 
 import com.example.dnd_backend.domain.events.DomainEvent;
 import com.example.dnd_backend.domain.events.ItemCreated;
+import com.example.dnd_backend.domain.events.ItemDestroyed;
+import com.example.dnd_backend.domain.events.ItemUpdated;
 import com.example.dnd_backend.domain.value_objects.Item;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,14 @@ public class ItemManager implements Projector<Item> {
     public void processEvent(DomainEvent event) {
         if (event instanceof ItemCreated e) {
             items.add(e.item());
+        } else if (event instanceof ItemUpdated e) {
+            Optional<Item> item = getByName(e.item().name());
+            if (item.isPresent()) {
+                items.remove(item.get());
+                items.add(e.item());
+            }
+        } else if (event instanceof ItemDestroyed e) {
+            items.remove(e.item());
         }
     }
 }

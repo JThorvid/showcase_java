@@ -1,4 +1,4 @@
-package com.example.dnd_backend.controllers;
+package com.example.dnd_backend.gateway.controllers;
 
 import com.example.dnd_backend.application.CharacterManager;
 import com.example.dnd_backend.application.ItemManager;
@@ -7,7 +7,6 @@ import com.example.dnd_backend.domain.entities.Inventory;
 import com.example.dnd_backend.domain.events.ItemAdded;
 import com.example.dnd_backend.domain.events.ItemRemoved;
 import com.example.dnd_backend.domain.value_objects.Item;
-import com.example.dnd_backend.gateway.controllers.InventoryController;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

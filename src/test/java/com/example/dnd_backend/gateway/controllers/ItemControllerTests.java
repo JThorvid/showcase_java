@@ -1,4 +1,4 @@
-package com.example.dnd_backend.controllers;
+package com.example.dnd_backend.gateway.controllers;
 
 import com.example.dnd_backend.application.CharacterManager;
 import com.example.dnd_backend.application.ItemManager;
@@ -6,8 +6,8 @@ import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.domain.entities.Inventory;
 import com.example.dnd_backend.domain.events.ItemCreated;
 import com.example.dnd_backend.domain.events.ItemDestroyed;
+import com.example.dnd_backend.domain.events.ItemUpdated;
 import com.example.dnd_backend.domain.value_objects.Item;
-import com.example.dnd_backend.gateway.controllers.ItemController;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,6 +143,33 @@ class ItemControllerTests {
         // then a "bad request" is returned
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         // and no events are sent
+        verifyNoInteractions(eventStore);
+    }
+
+    @Test
+    void testUpdateItem() {
+        // given the item exists
+        Mockito.when(itemManager.exists(item.name())).thenReturn(true);
+        // when the item is updated
+        Item newItem = new Item(item.name(), item.description(), item.weight() + 1);
+        ResponseEntity<Item> response = controller.updateItem(newItem);
+        // then the updated item gets returned
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(newItem, response.getBody());
+        // and an ItemUpdated event is sent
+        verify(eventStore).sendEvent(any(ItemUpdated.class));
+    }
+
+    @Test
+    void testUpdateItem_notFound() {
+        // given the item does not exist
+        Mockito.when(itemManager.exists(item.name())).thenReturn(false);
+        // when the item is updated
+        Item newItem = new Item(item.name(), item.description(), item.weight() + 1);
+        ResponseEntity<Item> response = controller.updateItem(newItem);
+        // then a "not found" gets returned
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // and no event is sent
         verifyNoInteractions(eventStore);
     }
 }

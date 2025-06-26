@@ -1,7 +1,6 @@
-package com.example.dnd_backend.controllers;
+package com.example.dnd_backend.gateway.controllers;
 
 import com.example.dnd_backend.domain.value_objects.Item;
-import com.example.dnd_backend.gateway.controllers.ItemController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -73,5 +72,18 @@ class ItemControllerIT {
         mockMvc.perform(delete("/items/" + item.name()))
                 // then no errors are returned
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUpdateItem() throws Exception {
+        // given the update item succeeds
+        Mockito.when(itemController.updateItem(item)).thenReturn(ResponseEntity.ok(item));
+        // when the item is updated
+        mockMvc.perform(put("/items")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(item)))
+                // then the new item is returned
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(item.name()));
     }
 }
