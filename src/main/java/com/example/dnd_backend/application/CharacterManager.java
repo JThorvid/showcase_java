@@ -1,9 +1,7 @@
 package com.example.dnd_backend.application;
 
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
-import com.example.dnd_backend.domain.events.CharacterCreated;
-import com.example.dnd_backend.domain.events.CharacterUpdated;
-import com.example.dnd_backend.domain.events.DomainEvent;
+import com.example.dnd_backend.domain.events.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,8 +34,8 @@ public class CharacterManager implements Projector<PlayerCharacter> {
     public void processEvent(DomainEvent event) {
         if (event instanceof CharacterCreated e) {
             characters.add(e.character());
-        } else if (event instanceof CharacterUpdated e) {
-            String characterName = e.name();
+        } else if (event instanceof CharacterUpdated || event instanceof ItemAdded || event instanceof ItemRemoved) {
+            String characterName = event.name();
             characters.stream()
                     .filter(it -> it.getName().equals(characterName))
                     .findFirst()
