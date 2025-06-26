@@ -13,7 +13,7 @@ public class SeekToBeginningRebalanceListener implements ConsumerAwareRebalanceL
 
     @Override
     public void onPartitionsAssigned(
-            Consumer<?, ?> consumer,
+            @NonNull Consumer<?, ?> consumer,
             @NonNull Collection<TopicPartition> partitions) {
         consumer.seekToBeginning(partitions);
     }
