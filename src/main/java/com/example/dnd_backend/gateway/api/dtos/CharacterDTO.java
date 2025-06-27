@@ -1,4 +1,4 @@
-package com.example.dnd_backend.gateway.controllers;
+package com.example.dnd_backend.gateway.api.dtos;
 
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.domain.value_objects.CharacterStats;
@@ -12,17 +12,6 @@ public record CharacterDTO(
         int wisdom,
         int charisma
 ) {
-    public CharacterDTO(PlayerCharacter character) {
-        this(
-                character.getName(),
-                character.getStats().strength(),
-                character.getStats().dexterity(),
-                character.getStats().constitution(),
-                character.getStats().intelligence(),
-                character.getStats().wisdom(),
-                character.getStats().charisma());
-    }
-
     public PlayerCharacter toEntity() {
         return new PlayerCharacter(
                 name,

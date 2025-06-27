@@ -1,7 +1,6 @@
-package com.example.dnd_backend.gateway.controllers;
+package com.example.dnd_backend.gateway.api.controllers;
 
 import com.example.dnd_backend.domain.value_objects.Item;
-import com.example.dnd_backend.gateway.api.controllers.ItemController;
 import com.example.dnd_backend.gateway.api.errors.ItemAlreadyExistsException;
 import com.example.dnd_backend.gateway.api.errors.ItemIsOwnedException;
 import com.example.dnd_backend.gateway.api.errors.ItemNotFoundException;
@@ -23,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ItemController.class)
-class ItemControllerIT {
+class ItemControllerTests {
     @MockitoBean
     private ItemService service;
 

@@ -1,21 +1,22 @@
-package com.example.dnd_backend.gateway.controllers;
+package com.example.dnd_backend.gateway.api.services;
 
 import com.example.dnd_backend.application.CharacterManager;
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.domain.events.CharacterCreated;
 import com.example.dnd_backend.domain.events.CharacterUpdated;
 import com.example.dnd_backend.domain.value_objects.CharacterStats;
+import com.example.dnd_backend.gateway.api.dtos.CharacterDTO;
+import com.example.dnd_backend.gateway.api.dtos.CharacterDtoAdapter;
+import com.example.dnd_backend.gateway.api.errors.CharacterAlreadyExistsException;
+import com.example.dnd_backend.gateway.api.errors.CharacterNotFoundException;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,31 +24,31 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-@WebMvcTest(CharacterController.class)
-class CharacterControllerTests {
+@SpringBootTest
+class CharacterServiceTests {
     @MockitoBean
     private CharacterEventStore eventStore;
 
     @MockitoBean
     private CharacterManager characterManager;
 
-    private CharacterController controller;
+    private final CharacterDtoAdapter adapter = new CharacterDtoAdapter();
     private final PlayerCharacter alice = new PlayerCharacter("Alice", new CharacterStats());
+    private final CharacterDTO aliceDTO = adapter.characterToDto(alice);
     private final PlayerCharacter bob = new PlayerCharacter("Bob", new CharacterStats());
+    private final CharacterDTO bobDTO = adapter.characterToDto(bob);
 
-    @BeforeEach
-    void setUp() {
-        controller = new CharacterController(eventStore, characterManager);
-    }
+    @Autowired
+    private CharacterService service;
 
     @Test
     void testGetCharacters_emptyList() {
         // given no characters exist yet
+        Mockito.when(characterManager.getAll()).thenReturn(List.of());
         // when all characters are requested
-        ResponseEntity<List<CharacterDTO>> actual = controller.getCharacters();
+        List<CharacterDTO> characters = service.getCharacters();
         // then an empty list is returned
-        assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertTrue(Objects.requireNonNull(actual.getBody()).isEmpty());
+        assertEquals(0, characters.size());
     }
 
     @Test
@@ -55,19 +56,20 @@ class CharacterControllerTests {
         // given two characters exist
         Mockito.when(characterManager.getAll()).thenReturn(List.of(alice, bob));
         // when all characters are requested
-        ResponseEntity<List<CharacterDTO>> actual = controller.getCharacters();
+        List<CharacterDTO> characters = service.getCharacters();
         // then both characters are returned
-        assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertEquals(2, Objects.requireNonNull(actual.getBody()).size());
+        assertEquals(2, characters.size());
+        assertTrue(characters.contains(aliceDTO));
+        assertTrue(characters.contains(bobDTO));
     }
 
     @Test
     void testGetCharacter_nonExistentCharacter() {
         // given no characters exist
-        // when one character is requested
-        ResponseEntity<CharacterDTO> actual = controller.getCharacter("Claude");
-        // a "not found" gets returned
-        assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
+        Mockito.when(characterManager.getByName(any())).thenReturn(Optional.empty());
+        // when a specific character is requested
+        // then an exception is thrown
+        assertThrows(CharacterNotFoundException.class, () -> service.getCharacter("Alice"));
     }
 
     @Test
@@ -75,11 +77,9 @@ class CharacterControllerTests {
         // given Alice exists
         Mockito.when(characterManager.getByName(alice.getName())).thenReturn(Optional.of(alice));
         // when Alice is requested
-        ResponseEntity<CharacterDTO> actual = controller.getCharacter(alice.getName());
+        CharacterDTO characterDTO = service.getCharacter(alice.getName());
         // then Alice gets returned
-        assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertNotNull(actual.getBody());
-        assertEquals(alice, actual.getBody().toEntity());
+        assertEquals(aliceDTO, characterDTO);
     }
 
     @Test
@@ -87,12 +87,10 @@ class CharacterControllerTests {
         // given Bob does not yet exist
         Mockito.when(characterManager.exists(bob.getName())).thenReturn(false);
         // when Bob is created
-        ResponseEntity<?> actual = controller.createCharacter(new CharacterDTO(bob));
-        // then a CharacterCreated event gets sent
-        assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertNotNull(actual.getBody());
-        assertInstanceOf(CharacterDTO.class, actual.getBody());
-        assertEquals(bob, ((CharacterDTO) actual.getBody()).toEntity());
+        CharacterDTO actualDTO = service.createCharacter(bobDTO);
+        // then Bob is returned
+        assertEquals(bobDTO, actualDTO);
+        // and a CharacterCreated event gets sent
         verify(eventStore).sendEvent(any(CharacterCreated.class));
     }
 
@@ -101,9 +99,8 @@ class CharacterControllerTests {
         // given Bob exists
         Mockito.when(characterManager.exists(bob.getName())).thenReturn(true);
         // when Bob gets created again
-        ResponseEntity<?> actual = controller.createCharacter(new CharacterDTO(bob));
-        // then a "bad request" gets returned
-        assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
+        // then an exception is thrown
+        assertThrows(CharacterAlreadyExistsException.class, () -> service.createCharacter(bobDTO));
         // and no events are sent
         verifyNoInteractions(eventStore);
     }
@@ -113,10 +110,8 @@ class CharacterControllerTests {
         // given Alice does not exist yet
         Mockito.when(characterManager.exists(alice.getName())).thenReturn(false);
         // when Alice gets updated
-        PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
-        ResponseEntity<?> actual = controller.updateCharacter(new CharacterDTO(newAlice));
-        // then a "not found" gets returned
-        assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
+        // then an exception is thrown
+        assertThrows(CharacterNotFoundException.class, () -> service.updateCharacter(aliceDTO));
         // and no events are sent
         verifyNoInteractions(eventStore);
     }
@@ -127,11 +122,10 @@ class CharacterControllerTests {
         Mockito.when(characterManager.exists(alice.getName())).thenReturn(true);
         // when Alice gets updated
         PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
-        ResponseEntity<?> actual = controller.updateCharacter(new CharacterDTO(newAlice));
-        // then a CharacterUpdated event gets sent
-        assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertNotNull(actual.getBody());
-        assertEquals(newAlice, ((CharacterDTO) actual.getBody()).toEntity());
+        CharacterDTO newAliceDTO = service.updateCharacter(adapter.characterToDto(newAlice));
+        // then the new Alice gets returned
+        assertEquals(newAlice, newAliceDTO.toEntity());
+        // and a CharacterUpdated event gets sent
         verify(eventStore).sendEvent(any(CharacterUpdated.class));
     }
 }

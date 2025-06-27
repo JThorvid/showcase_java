@@ -1,1 +1,0 @@
-[ItemDTO[name=Staff of power, description=super powerful, weight=8.0, amount=1]]

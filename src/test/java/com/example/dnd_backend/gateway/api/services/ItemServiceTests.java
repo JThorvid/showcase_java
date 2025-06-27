@@ -1,4 +1,4 @@
-package com.example.dnd_backend.gateway.controllers;
+package com.example.dnd_backend.gateway.api.services;
 
 import com.example.dnd_backend.application.CharacterManager;
 import com.example.dnd_backend.application.ItemManager;
@@ -8,26 +8,27 @@ import com.example.dnd_backend.domain.events.ItemCreated;
 import com.example.dnd_backend.domain.events.ItemDestroyed;
 import com.example.dnd_backend.domain.events.ItemUpdated;
 import com.example.dnd_backend.domain.value_objects.Item;
+import com.example.dnd_backend.gateway.api.errors.ItemAlreadyExistsException;
+import com.example.dnd_backend.gateway.api.errors.ItemIsOwnedException;
+import com.example.dnd_backend.gateway.api.errors.ItemNotFoundException;
 import com.example.dnd_backend.gateway.eventstore.CharacterEventStore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-@WebMvcTest(ItemController.class)
-class ItemControllerTests {
+@SpringBootTest
+class ItemServiceTests {
     @MockitoBean
     private ItemManager itemManager;
 
@@ -37,24 +38,20 @@ class ItemControllerTests {
     @MockitoBean
     private CharacterEventStore eventStore;
 
-    private ItemController controller;
-
-    @MockitoBean
+    @Mock
     private PlayerCharacter character;
 
-    private final Item item = new Item("Sword", "A sharp sword", 1.5);
+    @Autowired
+    private ItemService service;
 
-    @BeforeEach
-    void setUp() {
-        controller = new ItemController(eventStore, itemManager, characterManager);
-    }
+    private final Item item = new Item("Sword", "A sharp sword", 1.5);
 
     @Test
     void testGetItems() {
         // given an item
         Mockito.when(itemManager.getAll()).thenReturn(List.of(item));
         // when all items are requested
-        List<Item> items = controller.getItems();
+        List<Item> items = service.getItems();
         // then the item is returned in a list
         assertTrue(items.contains(item));
     }
@@ -64,20 +61,19 @@ class ItemControllerTests {
         // given an item
         Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
         // when this item is requested
-        ResponseEntity<Item> response = controller.getItem(item.name());
+        Item actual = service.getItem(item.name());
         // then the item is returned
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(item, response.getBody());
+        assertEquals(item, actual);
     }
 
     @Test
     void testGetItem_notFound() {
         // given no item
-        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.empty());
+        String name = item.name();
+        Mockito.when(itemManager.getByName(name)).thenReturn(Optional.empty());
         // when this item is requested
-        ResponseEntity<Item> response = controller.getItem(item.name());
-        // then a "not found" is returned
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // then an exception is thrown
+        assertThrows(ItemNotFoundException.class, () -> service.getItem(name));
     }
 
     @Test
@@ -85,10 +81,9 @@ class ItemControllerTests {
         // given the item does not exist yet
         Mockito.when(itemManager.exists(item.name())).thenReturn(false);
         // when this item is created
-        ResponseEntity<Item> response = controller.createItem(item);
+        Item actual = service.createItem(item);
         // then the item is returned
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(item, response.getBody());
+        assertEquals(item, actual);
         // and an Item Created event is sent
         verify(eventStore).sendEvent(any(ItemCreated.class));
     }
@@ -98,9 +93,8 @@ class ItemControllerTests {
         // given the item already exists
         Mockito.when(itemManager.exists(item.name())).thenReturn(true);
         // when this item is created
-        ResponseEntity<Item> response = controller.createItem(item);
-        // then a "bad request" is returned
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        // then an exception is thrown
+        assertThrows(ItemAlreadyExistsException.class, () -> service.createItem(item));
         // and no events are sent
         verifyNoInteractions(eventStore);
     }
@@ -113,19 +107,19 @@ class ItemControllerTests {
         Inventory emptyInventory = new Inventory();
         Mockito.when(character.getInventory()).thenReturn(emptyInventory);
         // when this item is deleted
-        controller.deleteItem(item.name());
+        assertDoesNotThrow(() -> service.deleteItem(item.name()));
         // then a ItemDestroyed event is sent
         verify(eventStore).sendEvent(any(ItemDestroyed.class));
     }
 
     @Test
     void testDeleteItem_notFound() {
-        // given the item does not exists
-        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.empty());
+        // given the item does not exist
+        String name = item.name();
+        Mockito.when(itemManager.getByName(name)).thenReturn(Optional.empty());
         // when this item is deleted
-        ResponseEntity<Object> response = controller.deleteItem(item.name());
-        // then a "not found" is returned
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // then an exception is thrown
+        assertThrows(ItemNotFoundException.class, () -> service.deleteItem(name));
         // and no events are sent
         verifyNoInteractions(eventStore);
     }
@@ -133,15 +127,15 @@ class ItemControllerTests {
     @Test
     void testDeleteItem_owned() {
         // given the item exists, but is owned by someone
-        Mockito.when(itemManager.getByName(item.name())).thenReturn(Optional.of(item));
+        String name = item.name();
+        Mockito.when(itemManager.getByName(name)).thenReturn(Optional.of(item));
         Mockito.when(characterManager.getAll()).thenReturn(List.of(character));
         Inventory inventory = new Inventory();
-        inventory.add(item.name(), 1);
+        inventory.add(name, 1);
         Mockito.when(character.getInventory()).thenReturn(inventory);
         // when this item is deleted
-        ResponseEntity<Object> response = controller.deleteItem(item.name());
-        // then a "bad request" is returned
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        // then an exception is thrown
+        assertThrows(ItemIsOwnedException.class, () -> service.deleteItem(name));
         // and no events are sent
         verifyNoInteractions(eventStore);
     }
@@ -152,10 +146,9 @@ class ItemControllerTests {
         Mockito.when(itemManager.exists(item.name())).thenReturn(true);
         // when the item is updated
         Item newItem = new Item(item.name(), item.description(), item.weight() + 1);
-        ResponseEntity<Item> response = controller.updateItem(newItem);
+        Item actual = service.updateItem(newItem);
         // then the updated item gets returned
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(newItem, response.getBody());
+        assertEquals(newItem, actual);
         // and an ItemUpdated event is sent
         verify(eventStore).sendEvent(any(ItemUpdated.class));
     }
@@ -166,9 +159,8 @@ class ItemControllerTests {
         Mockito.when(itemManager.exists(item.name())).thenReturn(false);
         // when the item is updated
         Item newItem = new Item(item.name(), item.description(), item.weight() + 1);
-        ResponseEntity<Item> response = controller.updateItem(newItem);
-        // then a "not found" gets returned
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // then an exception is thrown
+        assertThrows(ItemNotFoundException.class, () -> service.updateItem(newItem));
         // and no event is sent
         verifyNoInteractions(eventStore);
     }
