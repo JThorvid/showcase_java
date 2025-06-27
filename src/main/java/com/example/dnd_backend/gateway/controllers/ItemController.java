@@ -1,12 +1,12 @@
 package com.example.dnd_backend.gateway.controllers;
 
-import com.example.dnd_backend.application.EventRepository;
 import com.example.dnd_backend.application.Projector;
 import com.example.dnd_backend.domain.aggregates.PlayerCharacter;
 import com.example.dnd_backend.domain.events.ItemCreated;
 import com.example.dnd_backend.domain.events.ItemDestroyed;
 import com.example.dnd_backend.domain.events.ItemUpdated;
 import com.example.dnd_backend.domain.value_objects.Item;
+import com.example.dnd_backend.gateway.eventstore.EventRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

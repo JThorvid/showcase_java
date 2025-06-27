@@ -1,6 +1,5 @@
 package com.example.dnd_backend.gateway.eventstore;
 
-import com.example.dnd_backend.application.EventRepository;
 import com.example.dnd_backend.domain.events.DomainEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;

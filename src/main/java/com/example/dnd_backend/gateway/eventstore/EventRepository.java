@@ -1,4 +1,4 @@
-package com.example.dnd_backend.application;
+package com.example.dnd_backend.gateway.eventstore;
 
 import com.example.dnd_backend.domain.events.DomainEvent;
 

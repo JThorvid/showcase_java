@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Getter
@@ -26,5 +27,25 @@ public class Inventory {
         } else {
             countPerItem.remove(itemName);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Inventory that)) return false;
+
+        for (Map.Entry<String, Integer> entry : countPerItem.entrySet()) {
+            if (!that.countPerItem.containsKey(entry.getKey())) return false;
+            if (!Objects.equals(that.countPerItem.get(entry.getKey()), entry.getValue())) return false;
+        }
+        for (Map.Entry<String, Integer> entry : that.countPerItem.entrySet()) {
+            if (!countPerItem.containsKey(entry.getKey())) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(countPerItem);
     }
 }

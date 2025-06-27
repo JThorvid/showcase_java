@@ -44,7 +44,7 @@ class CharacterControllerTests {
     void testGetCharacters_emptyList() {
         // given no characters exist yet
         // when all characters are requested
-        ResponseEntity<List<PlayerCharacter>> actual = controller.getCharacters();
+        ResponseEntity<List<CharacterDTO>> actual = controller.getCharacters();
         // then an empty list is returned
         assertEquals(HttpStatus.OK, actual.getStatusCode());
         assertTrue(Objects.requireNonNull(actual.getBody()).isEmpty());
@@ -55,7 +55,7 @@ class CharacterControllerTests {
         // given two characters exist
         Mockito.when(characterManager.getAll()).thenReturn(List.of(alice, bob));
         // when all characters are requested
-        ResponseEntity<List<PlayerCharacter>> actual = controller.getCharacters();
+        ResponseEntity<List<CharacterDTO>> actual = controller.getCharacters();
         // then both characters are returned
         assertEquals(HttpStatus.OK, actual.getStatusCode());
         assertEquals(2, Objects.requireNonNull(actual.getBody()).size());
@@ -65,7 +65,7 @@ class CharacterControllerTests {
     void testGetCharacter_nonExistentCharacter() {
         // given no characters exist
         // when one character is requested
-        ResponseEntity<PlayerCharacter> actual = controller.getCharacter("Claude");
+        ResponseEntity<CharacterDTO> actual = controller.getCharacter("Claude");
         // a "not found" gets returned
         assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
     }
@@ -75,10 +75,11 @@ class CharacterControllerTests {
         // given Alice exists
         Mockito.when(characterManager.getByName(alice.getName())).thenReturn(Optional.of(alice));
         // when Alice is requested
-        ResponseEntity<PlayerCharacter> actual = controller.getCharacter(alice.getName());
+        ResponseEntity<CharacterDTO> actual = controller.getCharacter(alice.getName());
         // then Alice gets returned
         assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertEquals(alice, actual.getBody());
+        assertNotNull(actual.getBody());
+        assertEquals(alice, actual.getBody().toEntity());
     }
 
     @Test
@@ -86,11 +87,12 @@ class CharacterControllerTests {
         // given Bob does not yet exist
         Mockito.when(characterManager.exists(bob.getName())).thenReturn(false);
         // when Bob is created
-        ResponseEntity<?> actual = controller.createCharacter(bob);
+        ResponseEntity<?> actual = controller.createCharacter(new CharacterDTO(bob));
         // then a CharacterCreated event gets sent
         assertEquals(HttpStatus.OK, actual.getStatusCode());
         assertNotNull(actual.getBody());
-        assertEquals(bob, actual.getBody());
+        assertInstanceOf(CharacterDTO.class, actual.getBody());
+        assertEquals(bob, ((CharacterDTO) actual.getBody()).toEntity());
         verify(eventStore).sendEvent(any(CharacterCreated.class));
     }
 
@@ -99,7 +101,7 @@ class CharacterControllerTests {
         // given Bob exists
         Mockito.when(characterManager.exists(bob.getName())).thenReturn(true);
         // when Bob gets created again
-        ResponseEntity<?> actual = controller.createCharacter(bob);
+        ResponseEntity<?> actual = controller.createCharacter(new CharacterDTO(bob));
         // then a "bad request" gets returned
         assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
         // and no events are sent
@@ -112,7 +114,7 @@ class CharacterControllerTests {
         Mockito.when(characterManager.exists(alice.getName())).thenReturn(false);
         // when Alice gets updated
         PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
-        ResponseEntity<?> actual = controller.updateCharacter(newAlice);
+        ResponseEntity<?> actual = controller.updateCharacter(new CharacterDTO(newAlice));
         // then a "not found" gets returned
         assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
         // and no events are sent
@@ -125,10 +127,11 @@ class CharacterControllerTests {
         Mockito.when(characterManager.exists(alice.getName())).thenReturn(true);
         // when Alice gets updated
         PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
-        ResponseEntity<?> actual = controller.updateCharacter(newAlice);
+        ResponseEntity<?> actual = controller.updateCharacter(new CharacterDTO(newAlice));
         // then a CharacterUpdated event gets sent
         assertEquals(HttpStatus.OK, actual.getStatusCode());
-        assertEquals(newAlice, actual.getBody());
+        assertNotNull(actual.getBody());
+        assertEquals(newAlice, ((CharacterDTO) actual.getBody()).toEntity());
         verify(eventStore).sendEvent(any(CharacterUpdated.class));
     }
 }
