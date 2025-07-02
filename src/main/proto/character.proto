@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.example.dnd_backend.proto";
+
+// Character service definition
+service CharacterService {
+  // Get a single character by name
+  rpc GetCharacter(CharacterNameRequest) returns (Character);
+
+  // Get all characters
+  rpc GetCharacters(EmptyRequest) returns (GetCharactersResponse);
+
+  // Create a new character
+  rpc CreateCharacter(Character) returns (Character);
+
+  // Update an existing character
+  rpc UpdateCharacter(Character) returns (Character);
+}
+
+// Request to get a character by name
+message CharacterNameRequest {
+  string name = 1;
+}
+
+// Request to get all characters
+message EmptyRequest {
+}
+
+// Response containing a list of characters
+message GetCharactersResponse {
+  repeated Character characters = 1;
+}
+
+// Response containing a character
+message Character {
+  string name = 1;
+  int32 strength = 2;
+  int32 dexterity = 3;
+  int32 constitution = 4;
+  int32 intelligence = 5;
+  int32 wisdom = 6;
+  int32 charisma = 7;
+}
+
