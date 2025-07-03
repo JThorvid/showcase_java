@@ -1,58 +1,92 @@
 @URL=http://localhost:8080
+@GRPC_URL=grpc://localhost:9090/dnd_backend.CharacterService
 
-### Create a character
+### GRPC Get Character
+GRPC {{ GRPC_URL }}/GetCharacters
+
+### GRPC Get specific character GPRC
+GRPC {{ GRPC_URL }}/GetCharacter
+Content-Type: application/json
+
+{
+  "name": "Doug"
+}
+
+### GRPC Create character
+GRPC {{ GRPC_URL }}/CreateCharacter
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "strength": 18,
+  "dexterity": 9,
+  "constitution": 16,
+  "intelligence": 8,
+  "wisdom": 12,
+  "charisma": 10
+}
+
+### GRPC Update character
+GRPC {{ GRPC_URL }}/UpdateCharacter
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "strength": 19,
+  "dexterity": 9,
+  "constitution": 16,
+  "intelligence": 8,
+  "wisdom": 12,
+  "charisma": 10
+}
+
+### REST Create a character
 POST {{ URL }}/characters
 Content-Type: application/json
 
 {
   "name": "Bob",
-  "stats": {
-    "strength": 18,
-    "dexterity": 9,
-    "constitution": 16,
-    "intelligence": 8,
-    "wisdom": 12,
-    "charisma": 10
-  }
+  "strength": 18,
+  "dexterity": 9,
+  "constitution": 16,
+  "intelligence": 8,
+  "wisdom": 12,
+  "charisma": 10
 }
 
-### Create another character
+### REST Create another character
 POST {{ URL }}/characters
 Content-Type: application/json
 
 {
   "name": "Doug",
-  "stats": {
-    "strength": 10,
-    "dexterity": 10,
-    "constitution": 10,
-    "intelligence": 8,
-    "wisdom": 10,
-    "charisma": 12
-  }
+  "strength": 10,
+  "dexterity": 10,
+  "constitution": 10,
+  "intelligence": 8,
+  "wisdom": 10,
+  "charisma": 12
 }
 
-### Update a character
+### REST Update a character
 PUT {{ URL }}/characters
 Content-Type: application/json
 
 {
   "name": "Doug",
-  "stats": {
-    "strength": 11,
-    "dexterity": 10,
-    "constitution": 10,
-    "intelligence": 8,
-    "wisdom": 10,
-    "charisma": 12
-  }
+  "strength": 11,
+  "dexterity": 10,
+  "constitution": 10,
+  "intelligence": 8,
+  "wisdom": 10,
+  "charisma": 12
 }
 
-### Get all
+### REST Get all
 GET {{ URL }}/characters
 
-### GET specific
+### REST GET specific
 GET {{ URL }}/characters/Bob
 
-### GET another specific
+### REST GET another specific
 GET {{ URL }}/characters/Doug
