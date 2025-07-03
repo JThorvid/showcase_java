@@ -90,3 +90,16 @@ GET {{ URL }}/characters/Bob
 
 ### REST GET another specific
 GET {{ URL }}/characters/Doug
+
+### REST GET items
+GET {{ URL }}/items
+
+### REST POST items
+POST {{ URL }}/items
+Content-Type: application/json
+
+{
+  "name": "Pearl of Power",
+  "description": "super powerful",
+  "weight": 0
+}
