@@ -19,14 +19,13 @@ import java.util.List;
 public class CharacterService {
     private final EventRepository eventStore;
     private final Projector<PlayerCharacter> projector;
-    private final CharacterDtoAdapter adapter;
 
     public List<CharacterDTO> getCharacters() {
-        return projector.getAll().stream().map(adapter::characterToDto).toList();
+        return projector.getAll().stream().map(CharacterDtoAdapter::characterToDto).toList();
     }
 
     public CharacterDTO getCharacter(String name) throws CharacterNotFoundException {
-        return projector.getByName(name).map(adapter::characterToDto)
+        return projector.getByName(name).map(CharacterDtoAdapter::characterToDto)
                 .orElseThrow(() -> new CharacterNotFoundException(name));
     }
 

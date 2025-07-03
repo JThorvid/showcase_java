@@ -34,11 +34,10 @@ class CharacterServiceTests {
     @MockitoBean
     private CharacterManager characterManager;
 
-    private final CharacterDtoAdapter adapter = new CharacterDtoAdapter();
     private final PlayerCharacter alice = new PlayerCharacter("Alice", new CharacterStats());
-    private final CharacterDTO aliceDTO = adapter.characterToDto(alice);
+    private final CharacterDTO aliceDTO = CharacterDtoAdapter.characterToDto(alice);
     private final PlayerCharacter bob = new PlayerCharacter("Bob", new CharacterStats());
-    private final CharacterDTO bobDTO = adapter.characterToDto(bob);
+    private final CharacterDTO bobDTO = CharacterDtoAdapter.characterToDto(bob);
 
     @Autowired
     private CharacterService service;
@@ -124,7 +123,7 @@ class CharacterServiceTests {
         Mockito.when(characterManager.exists(alice.getName())).thenReturn(true);
         // when Alice gets updated
         PlayerCharacter newAlice = new PlayerCharacter("Alice", new CharacterStats(19, 8, 16, 18, 12, 10));
-        CharacterDTO newAliceDTO = service.updateCharacter(adapter.characterToDto(newAlice));
+        CharacterDTO newAliceDTO = service.updateCharacter(CharacterDtoAdapter.characterToDto(newAlice));
         // then the new Alice gets returned
         assertEquals(newAlice, newAliceDTO.toEntity());
         // and a CharacterUpdated event gets sent
